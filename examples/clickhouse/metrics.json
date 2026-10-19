@@ -29,12 +29,7 @@
       "kind": "avg",
       "combine": "mean",
       "query": "SELECT $bucket(ts) AS t, quantile(0.5)(latency_ms) AS value FROM requests WHERE $range(ts) GROUP BY t",
-      "description": "Median per hour; a longer range shows the mean of the hourly medians",
-      "kpi": {
-        "op": "<=",
-        "target": 800,
-        "set_by": "replace with your agreed target"
-      }
+      "description": "Median per hour; a longer range shows the mean of the hourly medians"
     },
     {
       "id": "spend",

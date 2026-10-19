@@ -51,7 +51,7 @@ requirements log. `python3 "$HOME/scripts/fetch.py" --check-metrics` checks it.
   hourly medians is not the median of the window).
 - `tolerance_pct`: the cross-check tolerance, default 1. Raise it only with the person, and log it.
 - `decimals`: fixed decimals on the page (e.g. 1 for a percentage near a target).
-- `kpi`: a target. `op` is `>=` or `<=`. `per: day` scales the target with the range (a daily
+- `kpi`: optional, only when the person asks for a target. `op` is `>=` or `<=`. `per: day` scales the target with the range (a daily
   target × 7 for 7 days); `range` (default) compares as is. `set_by` says who set it and when.
   A KPI comes from a person, never from you.
 
@@ -60,8 +60,8 @@ requirements log. `python3 "$HOME/scripts/fetch.py" --check-metrics` checks it.
 Computed on the page from measured metrics, so they always match what is shown.
 
 ```json
-{"id": "cost", "label": "GPU cost", "unit": "$", "op": "times", "a": "gpu_hours", "factor": 2.125,
- "set_by": "rate from Finance, 2026-10-02; set by hand, not measured"}
+{"id": "cost", "label": "Compute cost", "unit": "$", "op": "times", "a": "gpu_hours", "factor": 3.0,
+ "set_by": "Alex, 2026-10-02: $3 per GPU-hour; set by hand, not measured"}
 {"id": "err_rate", "label": "Error rate", "unit": "%", "op": "ratio", "a": "errors", "b": "requests", "factor": 100}
 ```
 
@@ -88,7 +88,5 @@ Computed on the page from measured metrics, so they always match what is shown.
   line at a KPI target.
 - **How it is measured**: definitions, notes and hand-set rates.
 
-An instance that needs its own design copies the template to `work/dashboard/template.html`,
-and `build.py` uses that copy instead. The one contract is the placeholder
-`/*__SNAPSHOT__*/null`, exactly once. Keep it self-contained (no CDN), keep light and dark
-themes, insert every label with `textContent`, and run `scripts/browser/check.mjs` after a change.
+An instance with its own design (from a person's mock-up or an existing dashboard) uses
+`work/dashboard/template.html` instead: [dashboard.md](dashboard.md) → **Your own design**.

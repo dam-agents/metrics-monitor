@@ -21,13 +21,7 @@
       "kind": "sum",
       "by": "namespace",
       "query": "sum by (namespace) (increase(vllm:request_success_total[$step]))",
-      "description": "Requests that finished successfully",
-      "kpi": {
-        "op": ">=",
-        "target": 100000,
-        "per": "day",
-        "set_by": "replace with your agreed target"
-      }
+      "description": "Requests that finished successfully"
     },
     {
       "id": "gpu_hours",
@@ -58,12 +52,7 @@
       "combine": "mean",
       "query": "histogram_quantile(0.95, sum by (le) (increase(vllm:time_to_first_token_seconds_bucket[$step])))",
       "decimals": 2,
-      "description": "95th percentile per hour, interpolated inside a histogram bucket; a longer range shows the mean of the hourly values",
-      "kpi": {
-        "op": "<=",
-        "target": 10,
-        "set_by": "replace with your agreed target"
-      }
+      "description": "95th percentile per hour, interpolated inside a histogram bucket; a longer range shows the mean of the hourly values"
     }
   ],
   "derived": [

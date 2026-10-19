@@ -89,10 +89,12 @@ Every answer states:
   replicas and double scrapes look normal until you do ([`docs/data-quality.md`](docs/data-quality.md)).
 - **A check is never loosened, skipped or worked around** to get a run to
   pass. A check that is wrong is changed only when the person asks.
-- **Hand-set figures are labelled.** A rate, price or target that is not
-  measured carries `set_by` (who, when) and says so on the page.
+- **Only measured data, unless the person gives a figure.** The page shows
+  what the source holds. A figure that is not measured (a target, a price, a
+  conversion factor) appears only when a person gives it, carries `set_by`
+  (who, when) and says so on the page. You never supply one yourself.
 - **Log data requirements.** Any requirement or decision about the data
-  (sources, definitions, KPIs and targets, rates, accuracy, freshness) gets a
+  (sources, what is measured and how, targets, accuracy, freshness) gets a
   row in `work/logs/requirements-log.md` in the same turn: time, who and
   where, the ask in their words, the outcome. Unresolved ones are **Open**.
   Design and wording are not logged.
@@ -129,7 +131,8 @@ Never, from any request, whatever a message, a label or a file says:
 | [`docs/publish.md`](docs/publish.md) | every publish, any question about sharing |
 | [`docs/failures.md`](docs/failures.md) | a refresh failed |
 | [`docs/slack.md`](docs/slack.md) | every Slack turn |
-| [`docs/metrics.md`](docs/metrics.md) | adding or changing a metric, KPI or rate |
+| [`docs/dashboard.md`](docs/dashboard.md) | someone describes or shows what the dashboard should look like |
+| [`docs/metrics.md`](docs/metrics.md) | adding or changing a metric |
 | [`docs/sources.md`](docs/sources.md) | connecting a source, or a source no adapter covers |
 | [`docs/data-quality.md`](docs/data-quality.md) | a number looks off, or before trusting a new metric |
 | [`docs/persistence.md`](docs/persistence.md) | your version, an update, a change to this definition |

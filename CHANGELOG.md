@@ -4,6 +4,20 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.2.0
+
+- Onboarding starts from what the person wants the dashboard to show: a
+  description, a screenshot or mock-up, or an existing dashboard to follow.
+  New [`docs/dashboard.md`](docs/dashboard.md): map each element to the
+  source, say plainly what is not there, and rebuild the reference's layout
+  as the instance's own template.
+- Targets and rates are no longer prompted for: a figure that is not measured
+  appears only when the person gives it. The Prometheus and ClickHouse
+  examples no longer carry placeholder targets.
+
+**Upgrade:** none. Instances already running keep their `metrics.json` and
+template; `work/reference/` is optional.
+
 ## 0.1.0
 
 First release.

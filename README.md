@@ -53,9 +53,11 @@ The kit is not in the DAM catalog yet. To try it, create an agent from this repo
 1. **Source.** Which system, its URL, and a credential if it needs one. Add the credential as a
    **Custom Header** connection in the agent's settings. The gateway adds the header to each
    request, and the agent never sees it.
-2. **Metrics.** You and the agent go through what exists and agree, metric by metric, what to
-   measure. It goes in `work/metrics.json` ([`docs/metrics.md`](docs/metrics.md)). Targets and
-   rates come only from you, each recorded with who set it.
+2. **What the dashboard shows.** Describe it, share a screenshot or mock-up, or point at an
+   existing dashboard to follow. The agent maps each number and chart to what your source
+   holds, says plainly what it cannot find, and agrees the list with you
+   ([`docs/dashboard.md`](docs/dashboard.md)). It goes in `work/metrics.json`. If your
+   reference has its own layout, the agent rebuilds that layout on the live data.
 3. **Dashboard.** A title, and who may see it.
 4. **Slack.** The team channel, an optional header line for messages, and who gets failure DMs.
 5. **First refresh.** The agent pulls the full history, runs every check, shows you the page,

@@ -14,7 +14,7 @@ Call `set_onboarding_checklist` with these steps:
 | id | label |
 |----|-------|
 | `source` | Which data source, and how to reach it |
-| `metrics` | What to measure, agreed together |
+| `metrics` | What the dashboard shows, agreed together |
 | `dashboard` | The dashboard's title and who may see it |
 | `slack` | Whether, and in which channel, people may ask questions |
 | `failures` | Who is told when an hourly refresh fails |
@@ -55,14 +55,25 @@ EOF
     **When the source does not answer**, and tell the person exactly what
     failed (DNS, TLS, 401, 403, a timeout from a firewall). Do not move on
     with a source that does not answer, except `demo`.
-- **Metrics**: what the person wants to see, in their words. Then explore the
-  source with them: list what exists, **break each candidate down by its
-  producers** ([`docs/data-quality.md`](docs/data-quality.md)), and propose
-  `work/metrics.json` metric by metric, starting from the example in
-  `examples/<source>/metrics.json`. For each: label, unit, kind, how series
-  are split (`by`), and a one-line description a reader understands. KPIs and
-  hand-set rates only when the person gives them, each with `set_by` (who,
-  and the date). Log each decision in the requirements log.
+- **What the dashboard shows**: ask what the person wants to see, and offer
+  three ways to say it:
+  - **describe it** in their own words ("requests per team per day, and how
+    slow the slowest 5% are");
+  - **a screenshot or mock-up**: an image pasted into this chat, or a sketch;
+  - **an existing dashboard** to follow: an HTML file, a page export, or a
+    link you can open.
+
+  Save what they share under `work/reference/` (an image, the HTML, a note
+  of the link) so later sessions can see what was asked for. Then follow
+  [`docs/dashboard.md`](docs/dashboard.md): list every number, chart and
+  table the reference shows, find each one in the source (or say plainly
+  that the source does not have it), and agree `work/metrics.json` with the
+  person item by item, starting from `examples/<source>/metrics.json`.
+  Before you trust a series, **break it down by its producers**
+  ([`docs/data-quality.md`](docs/data-quality.md)). If the reference's layout is
+  not the default page, build the instance's own template from it
+  ([`docs/dashboard.md`](docs/dashboard.md) → **Your own design**). Log each
+  data decision in the requirements log.
   `python3 "$HOME/scripts/fetch.py" --check-metrics` must print `ok`.
 - **Dashboard**: a title (suggest the team's or system's name plus
   "metrics"), an optional subtitle, and **who may see it**:
