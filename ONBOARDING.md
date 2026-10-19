@@ -11,7 +11,7 @@ and stop.
 kit has the onboarding tools (`set_onboarding_checklist`,
 `complete_onboarding_step`, `mark_onboarding_complete`) and the hourly
 schedule, held until onboarding completes. An agent that was set up by hand
-from this repository (README → **Set it up by hand**) has neither. There,
+from this repository (README → **Set it up**) has neither. There,
 list the checklist in the chat instead, and create the schedule in step 5.
 
 ## 1. Open the checklist

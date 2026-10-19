@@ -4,6 +4,18 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.3.2
+
+- README → **Set it up** is the one way to use the kit today: the catalog
+  option is gone. The install message no longer forces the checkout, so it
+  stops instead of overwriting a file already in `$HOME`, and it works when
+  `$HOME` already has an `origin` remote.
+- README: a screenshot of the demo dashboard, the :00 UTC schedule, the
+  optional GitHub connection, the 0.5% completeness threshold, what the
+  browser check fails on, and what **Develop** needs installed.
+
+**Upgrade:** none.
+
 ## 0.3.1
 
 - README → **Use it today**: how to use the kit before it is in a catalog,

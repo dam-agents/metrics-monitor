@@ -3,34 +3,19 @@
 A [DAM](https://github.com/dam-agents/dam) starter kit: an agent that keeps a dashboard of your
 data up to date and answers questions about it in Slack.
 
-- **Hourly dashboard.** Every hour the agent pulls your data, checks it, and publishes a new
-  version of the dashboard at the same link. If a check fails, nothing is published.
+- **Hourly dashboard.** Every hour, at :00 UTC, the agent pulls your data, checks it, and
+  publishes a new version of the dashboard at the same link. If a check fails, nothing is
+  published.
 - **You choose who sees it:** private, public (anyone with the link), or restricted (named emails).
 - **Slack Q&A.** People in your team channel ask about the data and get answers from a live query.
 - **Any data source:** Prometheus (and Mimir, Thanos, VictoriaMetrics), ClickHouse, or anything a
   script can read.
 
-## Use it today
+![The dashboard on the demo source](docs/images/dashboard-demo.png)
 
-The kit is not in the DAM catalog yet, so it isn't under **Browse starter kits**. There are two ways
-to use it now.
+## Set it up
 
-### Option A: ask your DAM admin to list it (one click for everyone)
-
-An admin adds this repository to a catalog the install reads, such as the install's own catalog
-or a team catalog repository:
-
-```yaml
-# catalog.yaml
-kits:
-  - url: https://github.com/dam-agents/metrics-monitor
-```
-
-It appears under **Browse starter kits** at the catalog's next refresh, with no redeploy. Then
-choose **Metrics Monitor**, connect Slack if you want Q&A, and create the agent. Onboarding
-starts by itself, and the hourly schedule starts when it finishes.
-
-### Option B: set it up by hand (works on any DAM today)
+This works on any DAM today:
 
 1. **Create an agent** on the **Claude Code** harness.
 2. **Let it reach your data.** In the agent's settings, under egress, allow your source's host.
@@ -43,16 +28,22 @@ starts by itself, and the hourly schedule starts when it finishes.
 5. **Send the agent this message:**
 
    ```text
-   Install the Metrics Monitor starter kit into your home directory, then onboard me:
-   cd "$HOME" && git init -q && git remote add origin https://github.com/dam-agents/metrics-monitor
-   git fetch -q origin main && git checkout -q -f -B main origin/main
+   Install the Metrics Monitor starter kit into your home directory with the commands below,
+   then read $HOME/CLAUDE.md and follow $HOME/ONBOARDING.md. I set this up by hand, so create
+   the hourly schedule at the end yourself. If the checkout stops because a file is in the way,
+   tell me which files and stop.
+
+   cd "$HOME" && git init -q
+   git remote get-url origin >/dev/null 2>&1 || git remote add origin https://github.com/dam-agents/metrics-monitor
+   git fetch -q origin main && git checkout -q -B main origin/main
    cd "$HOME/scripts/browser" && npm ci --no-audit --no-fund --silent
-   Then read $HOME/CLAUDE.md and follow $HOME/ONBOARDING.md. I set this up by hand,
-   so create the hourly schedule at the end yourself.
    ```
 
-The checkout adds the kit's files to the agent's home and leaves everything already there in
-place. The agent then onboards you, and asks:
+The checkout adds the kit's files to the agent's home and leaves your other files in place. It
+never overwrites a file: if a file with the same name as a kit file is already there, the
+checkout stops and the agent tells you which one.
+
+The agent then onboards you, and asks:
 
 1. **Where the data is**: the source, its URL, and the connection id from step 3.
 2. **What the dashboard should show**: describe it, share a screenshot or mock-up, or point at a
@@ -61,6 +52,9 @@ place. The agent then onboards you, and asks:
 
 Then it runs the first refresh, shows you the page, publishes it and creates the hourly schedule.
 To try it without real data, pick the `demo` source.
+
+Optional: add a **GitHub** connection with read access to this repository. The agent then checks
+for newer versions of itself and proposes upgrades as a patch. It never needs write access.
 
 ### Who can see the dashboard
 
@@ -75,16 +69,20 @@ To try it without real data, pick the `demo` source.
 | Check | Fails when |
 | --- | --- |
 | Freshness | the data is too old |
-| Completeness | history or series went missing, or a published total dropped |
+| Completeness | history or series went missing, or a published total dropped by more than 0.5% |
 | Cross-check | a number on the page differs from an independent query by more than 1% |
-| Browser | the page shows errors, NaN or empty charts |
+| Browser | the page shows errors or NaN, or has no charts |
 
 When a run fails, the agent works out why. It may fix its own tooling but never loosens a check.
 It reports by Slack DM to one person you choose. Successful runs post nothing.
 
 ## Develop
 
+You need Python 3.12 and Node 22. The browser check also needs `scripts/browser/node_modules` and
+a headless Chromium (or `MM_CHROMIUM` set to one); without `node_modules`, the tests skip it.
+
 ```sh
+(cd scripts/browser && npm ci && npx playwright-core install chromium-headless-shell)
 bash scripts/tests/run.sh               # offline tests, using the demo source
 bash scripts/validate-definition.sh .   # structure of the kit
 ```
