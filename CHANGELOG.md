@@ -4,6 +4,15 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.3.1
+
+- README → **Use it today**: how to use the kit before it is in a catalog,
+  either listed by an admin or set up by hand on any DAM.
+- ONBOARDING.md handles a hand-set-up agent: no onboarding tools, and it
+  creates the hourly schedule itself at the end.
+
+**Upgrade:** none.
+
 ## 0.3.0
 
 - An optional logo beside the dashboard's title: `logo` (and `logo_dark` for

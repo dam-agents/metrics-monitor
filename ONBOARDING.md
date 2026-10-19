@@ -7,6 +7,13 @@ and stop.
 If `$HOME/.metrics-monitor-onboarded` exists, onboarding already ran. Say so
 and stop.
 
+**Created from the kit, or set up by hand.** An agent created from the starter
+kit has the onboarding tools (`set_onboarding_checklist`,
+`complete_onboarding_step`, `mark_onboarding_complete`) and the hourly
+schedule, held until onboarding completes. An agent that was set up by hand
+from this repository (README → **Set it up by hand**) has neither. There,
+list the checklist in the chat instead, and create the schedule in step 5.
+
 ## 1. Open the checklist
 
 Call `set_onboarding_checklist` with these steps:
@@ -161,6 +168,11 @@ bash "$HOME/scripts/verify-onboarding.sh" --live
 Apply every `FAIL` line's `fix:` and run it again until it prints `PASS`.
 Then call `mark_onboarding_complete`, which starts the hourly schedule. If a
 step is still open, leave it uncalled and say which one.
+
+Set up by hand, there is no `mark_onboarding_complete`. Check `list_schedules`.
+If no schedule named `metrics-monitor-refresh-hourly` exists, create it with
+`create_schedule`, taking `name`, `cron`, `sessionMode` and `task` from
+`kit.yaml` → `schedules`. Use the UTC `cron`, not an rrule.
 
 Finish with a short summary: the source, the metrics, the artifact link and
 its visibility, the Slack channel, who gets failure DMs, and that the
