@@ -26,7 +26,7 @@ DEF="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="${MM_WORK:-$HOME/work}"
 export MM_WORK="$WORK"
 CONFIG="$WORK/CONFIG.md"
-KNOWN="source source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle visibility artifact_id report_to slack_channel slack_header timezone"
+KNOWN="source source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle logo logo_dark visibility artifact_id report_to slack_channel slack_header timezone"
 REQUIRED="source title visibility"
 
 CHECKS=0; FAILS=0; WARNS=0
@@ -70,6 +70,11 @@ else
     [ -z "$v" ] && { ok "config.$k" "none"; continue; }
     if printf '%s' "$v" | grep -qE '^[CGDUW][A-Z0-9]{6,}$'; then ok "config.$k" "$v"
     else fail "config.$k" "'$v' is not a Slack id" "use the id describe_channel / describe_channel_users gives, e.g. C0123ABCD or U0123ABCD: $CFG_FIX"; fi
+  done
+  for k in logo logo_dark; do
+    v="$(cfg "$k")"; [ -z "$v" ] && continue
+    if out="$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import build; build.logo_uri(sys.argv[2]); print("ok")' "$DEF/scripts" "$v" 2>&1)"; then ok "config.$k" "$v"
+    else fail "config.$k" "$out" "save the image in work/ and name it here: $CFG_FIX"; fi
   done
   unknown="$(grep -oE '^[-*][[:space:]]*[A-Za-z0-9_]+[[:space:]]*:' "$CONFIG" | sed -E 's/^[-*][[:space:]]*//; s/[[:space:]]*:$//' |
     tr '[:upper:]' '[:lower:]' | sort -u | while read -r k; do case " $KNOWN " in *" $k "*) ;; *) printf '%s ' "$k" ;; esac; done)"

@@ -19,7 +19,7 @@ run, the agent asks you:
    a Custom Header connection, so the agent never sees it.
 2. **What the dashboard should show**: describe it, share a screenshot or mock-up, or point at a
    dashboard to follow. The agent maps each item to your data and tells you what it can't find.
-3. **Who may see it**, and which Slack channel to answer in.
+3. **Who may see it**, an optional logo, and which Slack channel to answer in.
 
 Then it runs the first refresh, shows you the page and publishes it. To try it without real data,
 pick the `demo` source.

@@ -156,6 +156,47 @@ class Checks(unittest.TestCase):
         self.assertIn("FAIL  gpu_hours", r.stdout)
 
 
+class Logo(unittest.TestCase):
+    PNG = b"\x89PNG\r\n\x1a\n" + b"\0" * 32
+
+    def setUp(self):
+        import build
+        self.build = build
+        self.made = []
+
+    def tearDown(self):
+        for p in self.made:
+            os.remove(p)
+
+    def put(self, name, data):
+        p = os.path.join(mm.WORK, name)
+        with open(p, "wb") as f:
+            f.write(data)
+        self.made.append(p)
+
+    def test_embeds(self):
+        self.put("t-logo.png", self.PNG)
+        self.assertTrue(self.build.logo_uri("t-logo.png").startswith("data:image/png;base64,"))
+
+    def refused(self, name, needle):
+        with self.assertRaises(SystemExit) as c:
+            self.build.logo_uri(name)
+        self.assertIn(needle, str(c.exception))
+
+    def test_refuses(self):
+        self.put("t-fake.png", b"<html>")
+        self.put("t-big.svg", b"<svg>" + b" " * (600 * 1024))
+        self.refused("../../etc/hostname", "inside work/")
+        self.refused("t-none.png", "no such file")
+        self.refused("metrics.json", "use one of")
+        self.refused("t-fake.png", "not a png")
+        self.refused("t-big.svg", "under 512 KB")
+
+    def test_template_slot(self):
+        with open(os.path.join(DEF, "dashboard", "template.html")) as f:
+            self.assertEqual(f.read().count("/*__LOGO__*/null"), 1)
+
+
 class Publish(unittest.TestCase):
     def test_refuses_other_url(self):
         r = run("bash", "scripts/publish_upload.sh", "https://example.com/upload")

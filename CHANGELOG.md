@@ -4,6 +4,16 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.3.0
+
+- An optional logo beside the dashboard's title: `logo` (and `logo_dark` for
+  the dark theme) in `work/CONFIG.md` name an image in `work/` (PNG, JPEG,
+  WebP or SVG, under 512 KB). `build.py` embeds it, so the page stays
+  self-contained; `verify-onboarding.sh` checks it.
+
+**Upgrade:** none. Without `logo` the page looks as before. An instance with
+its own template adds `/*__LOGO__*/null` to show a logo.
+
 ## 0.2.0
 
 - Onboarding starts from what the person wants the dashboard to show: a

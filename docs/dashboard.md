@@ -81,6 +81,11 @@ colours, a header), rebuild it as this instance's template:
 5. Note in `work/CLAUDE.md` that the instance has its own template, and what
    it was built from.
 
+A logo needs no template of your own: save the image in `work/` and set
+`logo` (and `logo_dark` for the dark theme) in `work/CONFIG.md`. `build.py`
+embeds it beside the title. An own template shows it where it has
+`/*__LOGO__*/null` (an object with `light`, `dark` and `alt` data, or `null`).
+
 A layout change is design, not data: it does not go in the requirements log.
 
 ## Later changes

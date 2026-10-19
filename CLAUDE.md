@@ -32,6 +32,9 @@ Written during onboarding; a key is a `- key: value` bullet, read by
   platform connection the gateway injects.
 - `source_label`: how the page and answers name the source ("Production Mimir").
 - `title`, `subtitle`: the dashboard's heading.
+- `logo`, `logo_dark`: optional image files in `work/` (PNG, JPEG, WebP or
+  SVG, under 512 KB) shown beside the title; `logo_dark` is used in the dark
+  theme, and without it `logo` is used in both. Embedded in the page.
 - `visibility`: `private`, `public` or `restricted`: what the owner chose
   ([`docs/publish.md`](docs/publish.md)).
 - `artifact_id`: the dashboard artifact, written after the first publish.

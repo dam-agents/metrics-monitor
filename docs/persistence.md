@@ -8,7 +8,7 @@ this definition itself.
 | Path | Kind | Holds |
 | --- | --- | --- |
 | `$HOME` | the definition, a git checkout (`origin`) | `kit.yaml`, `CLAUDE.md`, `AGENTS.md`, `ONBOARDING.md`, `README.md`, `LICENSE`, `VERSION`, `CHANGELOG.md`, `.gitignore`, `docs/`, `scripts/`, `dashboard/`, `examples/`, `.github/` |
-| `$HOME/work` | runtime state, a plain directory | `CONFIG.md`, `metrics.json`, `CLAUDE.md` (this instance's notes), `AGENTS.md`, `VERSION`, `artifacts.json`, `.claude/settings.json`, `data/`, `dist/`, `logs/`, `sources/`, `reference/` (what the person showed at onboarding), optionally `dashboard/template.html` |
+| `$HOME/work` | runtime state, a plain directory | `CONFIG.md`, `metrics.json`, `CLAUDE.md` (this instance's notes), `AGENTS.md`, `VERSION`, `artifacts.json`, `.claude/settings.json`, `data/`, `dist/`, `logs/`, `sources/`, `reference/` (what the person showed at onboarding), optionally a logo image, optionally `dashboard/template.html` |
 
 The `.gitignore` at `$HOME` is an allowlist, so `work/` and the home's secrets
 (`.ssh`, `.claude`, `.config`) are invisible to the definition. **Never

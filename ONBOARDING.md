@@ -76,7 +76,12 @@ EOF
   data decision in the requirements log.
   `python3 "$HOME/scripts/fetch.py" --check-metrics` must print `ok`.
 - **Dashboard**: a title (suggest the team's or system's name plus
-  "metrics"), an optional subtitle, and **who may see it**:
+  "metrics"), an optional subtitle, an optional **logo**, and **who may see it**:
+  - **Logo**: ask whether they want one beside the title. They paste an
+    image or share a file (PNG, JPEG, WebP or SVG, under 512 KB); save it as
+    `work/logo.<ext>` and set `logo`. If it is hard to see on a dark
+    background, ask for a light version and set `logo_dark`. Show both
+    themes in the first screenshot. A logo is design, not data: do not log it.
   - `private` (default): only the owner, inside the app.
   - `public`: anyone holding the link, no sign-in. You set it.
   - `restricted`: named email addresses, after sign-in. **Only the owner
@@ -105,6 +110,7 @@ EOF
 - source_label: Production metrics
 - title: Serving metrics
 - subtitle: Hourly, cross-checked
+- logo: logo.png
 - visibility: private
 - report_to: U0123ABCD
 - slack_channel: C0123ABCD
