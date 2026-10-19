@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrics</title>
+<!--
+  metrics-monitor dashboard. Self-contained: no CDN, no network, so it renders wherever the artifact
+  is opened. scripts/build.py replaces the snapshot placeholder below with work/data/snapshot.json.
+  The data model is generic (metrics -> series -> hourly buckets); customise looks here, and what is
+  measured in work/metrics.json. Labels from the data are inserted with textContent only.
+-->
+<style>
+:root{
+  --bg:#f7f8fa;--panel:#fff;--ink:#14171c;--muted:#5b6472;--line:#e3e6eb;--grid:#eef0f3;
+  --accent:#2a5bd7;--good:#1a7f4b;--bad:#c62f2f;
+  --c1:#2a5bd7;--c2:#e07b00;--c3:#1a9e77;--c4:#b5418f;--c5:#7a6ad8;--c6:#8a8f98;
+  color-scheme:light;
+}
+:root[data-theme=dark]{
+  --bg:#0f1216;--panel:#171b21;--ink:#e8ebf0;--muted:#9aa3b2;--line:#2a3039;--grid:#222830;
+  --accent:#7aa2ff;--good:#4cc38a;--bad:#ff6b6b;
+  --c1:#7aa2ff;--c2:#ffa94d;--c3:#4fd1a5;--c4:#f07ec4;--c5:#a99bff;--c6:#8a919c;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:18px 28px 14px}
+header h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.01em}
+.sub{color:var(--muted);margin-top:2px}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:12px;color:var(--muted);margin-top:8px}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--good)}
+.pill.stale i{background:var(--bad)}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 28px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:none;color:var(--ink);padding:6px 12px;font:inherit;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
+.bar label{color:var(--muted);font-size:12px}
+.bar .sp{flex:1}
+.bar .ghost{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
+main{padding:20px 28px 40px;max-width:1400px;margin:0 auto}
+h2{font-size:15px;margin:26px 0 10px;font-weight:650}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tile .l{color:var(--muted);font-size:12px}
+.tile .v{font-size:26px;font-weight:650;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .u{font-size:13px;color:var(--muted);font-weight:500;margin-left:4px}
+.tile .d{font-size:12px;color:var(--muted);margin-top:2px}
+.kpi{font-size:12px;margin-top:6px}
+.kpi.on{color:var(--good)}.kpi.off{color:var(--bad)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px 10px;position:relative}
+.card h3{margin:0;font-size:14px;font-weight:620}
+.card .cs{color:var(--muted);font-size:12px;margin:2px 0 8px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin-bottom:4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{fill:var(--muted);font-size:11px}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:160px;display:none;z-index:4}
+.tip b{display:block;margin-bottom:4px}
+.tip div{display:flex;justify-content:space-between;gap:12px}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:14px}
+summary{cursor:pointer;font-weight:620}
+.meth p,.meth li{color:var(--muted)}
+.meth code{font:12px ui-monospace,Menlo,monospace;background:var(--grid);padding:1px 5px;border-radius:4px;white-space:pre-wrap;word-break:break-word}
+.empty{color:var(--muted);padding:30px 0;text-align:center}
+@media (max-width:700px){.cards{grid-template-columns:1fr}main,header,.bar{padding-left:14px;padding-right:14px}}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Metrics</h1>
+  <div class="sub" id="subtitle"></div>
+  <div class="pill" id="live"><i></i><span id="srcLine"></span></div>
+</header>
+<div class="bar">
+  <div class="seg" id="range" role="group" aria-label="Time range">
+    <button data-r="24h">24 hours</button><button data-r="7d">7 days</button><button data-r="30d">30 days</button><button data-r="all">All</button>
+  </div>
+  <span id="rangeLine" class="sub"></span>
+  <span class="sp"></span>
+  <button class="ghost" id="theme" type="button" aria-label="Switch light or dark">◐ Theme</button>
+</div>
+<main>
+  <section id="kpis" hidden><h2>KPIs</h2><div class="tiles" id="kpiTiles"></div></section>
+  <h2>At a glance</h2>
+  <div class="tiles" id="tiles"></div>
+  <h2>Over time</h2>
+  <div class="cards" id="cards"></div>
+  <details class="meth" id="meth"><summary>How it is measured</summary><div id="methBody"></div></details>
+</main>
+<script>
+const SNAPSHOT = /*__SNAPSHOT__*/null;
+(function () {
+'use strict';
+const D = SNAPSHOT;
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const NS = 'http://www.w3.org/2000/svg';
+const sv = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+const COLORS = ['--c1', '--c2', '--c3', '--c4', '--c5'];
+const OTHER = '--c6';
+const TOP = 5;
+const RANGES = { '24h': 86400, '7d': 7 * 86400, '30d': 30 * 86400 };
+const S = { range: '7d' };
+
+const root = document.documentElement;
+const savedTheme = (() => { try { return localStorage.getItem('mm-theme'); } catch (e) { return null; } })();
+root.dataset.theme = savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+$('theme').onclick = () => { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('mm-theme', root.dataset.theme); } catch (e) {} render(); };
+const cv = v => getComputedStyle(root).getPropertyValue(v).trim();
+
+if (!D) { $('cards').appendChild(el('div', 'empty', 'No data yet: the first refresh has not run.')); return; }
+const M = D.meta, step = M.step;
+
+function fmt(v, m, short) {
+  if (v == null || !isFinite(v)) return 'no data';
+  const dec = m && m.decimals != null ? m.decimals : null;
+  const a = Math.abs(v);
+  const sfx = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']].find(([d]) => a >= d);
+  let s;
+  if (sfx && (!m || m.unit !== '%')) s = (v / sfx[0]).toFixed(a / sfx[0] >= 100 ? 0 : 1) + sfx[1];
+  else s = v.toFixed(dec != null ? dec : a >= 100 ? 0 : a >= 10 ? 1 : 2);
+  if (!m || short) return s;
+  return m.unit === '$' ? '$' + s : m.unit === '%' ? s + '%' : s;
+}
+const unitOf = m => (m.unit === '$' || m.unit === '%') ? '' : m.unit;
+const utc = t => new Date(t * 1000).toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
+const day = t => new Date(t * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+const hour = t => new Date(t * 1000).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+function window_() {
+  const end = M.end;
+  if (S.range === 'all') return [M.start, end];
+  return [Math.max(M.start, end - RANGES[S.range]), end];
+}
+function bucketSize(start, end) { // chart buckets: hourly up to 2 days, then daily, then weekly
+  const span = end - start;
+  if (span <= 2 * 86400) return step;
+  if (span <= 90 * 86400) return Math.max(step, 86400);
+  return Math.max(step, 7 * 86400);
+}
+function combine(vals, how) {
+  vals = vals.filter(v => v != null && isFinite(v));
+  if (!vals.length) return null;
+  if (how === 'sum') return vals.reduce((a, b) => a + b, 0);
+  if (how === 'max') return Math.max(...vals);
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+// The value of a metric over [s, e): per source bucket the series are combined, then buckets are
+// summed (sum), averaged (avg) or the last is taken (last). scripts/lib/mm.py range_value is the same rule.
+function rangeValue(m, s, e, keys) {
+  const per = new Map();
+  for (const ser of D.series[m.id] || []) {
+    if (keys && !keys.has(ser.key)) continue;
+    for (const [t, v] of ser.points) if (t >= s && t < e) { if (!per.has(t)) per.set(t, []); per.get(t).push(v); }
+  }
+  const vals = [...per.entries()].map(([t, vs]) => [t, combine(vs, m.combine)]).filter(x => x[1] != null);
+  if (!vals.length) return null;
+  if (m.kind === 'sum') return vals.reduce((a, x) => a + x[1], 0);
+  if (m.kind === 'last') return vals.reduce((a, x) => x[0] > a[0] ? x : a)[1];
+  return vals.reduce((a, x) => a + x[1], 0) / vals.length;
+}
+function seriesValue(m, ser, s, e) { return rangeValue(m, s, e, new Set([ser.key])); }
+
+function kpiState(m, v, s, e) {
+  const k = m.kpi; if (!k || v == null) return null;
+  const days = (e - s) / 86400;
+  const target = k.per === 'day' && m.kind === 'sum' ? k.target * days : k.target;
+  const pass = k.op === '>=' ? v >= target : v <= target;
+  return { pass, target, text: `${pass ? '✓ on target' : '✕ off target'} · target ${k.op === '>=' ? '≥' : '≤'} ${fmt(k.target, m)}${k.per === 'day' ? ' per day' : ''}` };
+}
+
+function tile(host, m, v, prev, s, e) {
+  const t = el('div', 'tile');
+  t.appendChild(el('div', 'l', m.label));
+  const vv = el('div', 'v', fmt(v, m)); const u = unitOf(m); if (u && v != null) vv.appendChild(el('span', 'u', u));
+  t.appendChild(vv);
+  if (prev != null && v != null && prev !== 0) {
+    const ch = (v / prev - 1) * 100;
+    t.appendChild(el('div', 'd', `${ch >= 0 ? '▲' : '▼'} ${Math.abs(ch).toFixed(1)}% vs the ${S.range === 'all' ? 'previous half' : 'previous ' + rangeName()}`));
+  } else t.appendChild(el('div', 'd', m.kind === 'sum' ? 'total in range' : m.kind === 'avg' ? 'average in range' : 'latest value'));
+  const k = kpiState(m, v, s, e);
+  if (k) t.appendChild(el('div', 'kpi ' + (k.pass ? 'on' : 'off'), k.text));
+  host.appendChild(t);
+}
+const rangeName = () => ({ '24h': '24 hours', '7d': '7 days', '30d': '30 days', all: 'period' })[S.range];
+
+// derived metrics: {id,label,unit,op:'times'|'ratio',a,b,factor}
+function derivedValue(d, s, e) {
+  const a = METRIC[d.a], b = d.b ? METRIC[d.b] : null;
+  const va = a ? valueOf(a, s, e) : null, vb = b ? valueOf(b, s, e) : null;
+  if (va == null) return null;
+  if (d.op === 'ratio') return vb ? va / vb * (d.factor || 1) : null;
+  return va * (d.factor || 1);
+}
+const METRIC = {};
+for (const m of D.metrics) METRIC[m.id] = m;
+for (const d of (M.derived || [])) METRIC[d.id] = Object.assign({ derived: true, kind: 'sum', combine: 'sum' }, d);
+const valueOf = (m, s, e) => m.derived ? derivedValue(m, s, e) : rangeValue(m, s, e);
+
+function chart(m, s, e) {
+  const card = el('div', 'card');
+  card.appendChild(el('h3', null, m.label + (unitOf(m) ? ` (${unitOf(m)})` : m.unit === '$' ? ' ($)' : m.unit === '%' ? ' (%)' : '')));
+  const B = bucketSize(s, e);
+  const series = (D.series[m.id] || []).map(ser => ({ ser, v: seriesValue(m, ser, s, e) })).filter(x => x.v != null);
+  const many = series.length > 1;
+  card.appendChild(el('div', 'cs', (m.description || '') + (m.description ? ' · ' : '') +
+    (m.kind === 'sum' ? `per ${B >= 604800 ? 'week' : B >= 86400 ? 'day' : 'hour'}` : `${m.kind === 'avg' ? 'average' : 'value'} per ${B >= 604800 ? 'week' : B >= 86400 ? 'day' : 'hour'}`) +
+    (many ? ` · by ${m.by}` : '')));
+  if (!series.length) { card.appendChild(el('div', 'empty', 'No data in this range')); return card; }
+  // top series keep their colour by overall rank; the rest fold into "Other"
+  const rank = (D.series[m.id] || []).map(ser => ({ key: ser.key, v: seriesValue(m, ser, M.start, M.end) || 0 })).sort((a, b) => b.v - a.v).map(x => x.key);
+  series.sort((a, b) => rank.indexOf(a.ser.key) - rank.indexOf(b.ser.key));
+  const top = series.slice(0, TOP), rest = series.slice(TOP);
+  const groups = top.map((x, i) => ({ name: x.ser.key, keys: new Set([x.ser.key]), color: cv(COLORS[i % COLORS.length]) }));
+  if (rest.length) groups.push({ name: `Other (${rest.length})`, keys: new Set(rest.map(x => x.ser.key)), color: cv(OTHER), members: rest.map(x => x.ser.key) });
+  const t0 = Math.floor(s / B) * B, buckets = [];
+  for (let t = t0; t < e; t += B) buckets.push(t);
+  const vals = buckets.map(t => groups.map(g => rangeValue(m, Math.max(t, s), Math.min(t + B, e), g.keys)));
+  const stacked = m.kind === 'sum' && m.combine === 'sum';
+  if (many) {
+    const lg = el('div', 'legend');
+    groups.forEach(g => { const sp = el('span'); const i = el('i'); i.style.background = g.color; sp.appendChild(i); sp.appendChild(document.createTextNode(g.name)); if (g.members) sp.title = g.members.join(', '); lg.appendChild(sp); });
+    card.appendChild(lg);
+  }
+  const W = 640, H = 220, L = 52, R = 10, T = 8, Bm = 24;
+  const svg = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': m.label });
+  const tops = vals.map(row => stacked ? row.reduce((a, v) => a + (v || 0), 0) : Math.max(0, ...row.map(v => v || 0)));
+  let max = Math.max(...tops, m.kpi && !(m.kpi.per === 'day') ? m.kpi.target : 0);
+  if (!(max > 0)) max = 1;
+  const nice = (() => { const p = Math.pow(10, Math.floor(Math.log10(max))); const f = max / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; })();
+  const y = v => T + (H - T - Bm) * (1 - v / nice);
+  const bw = (W - L - R) / buckets.length;
+  const x = i => L + i * bw;
+  for (let k = 0; k <= 4; k++) {
+    const v = nice * k / 4;
+    svg.appendChild(sv('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: cv('--grid'), 'stroke-width': 1 }));
+    const tx = sv('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }); tx.textContent = fmt(v, m, true); svg.appendChild(tx);
+  }
+  const every = Math.max(1, Math.ceil(buckets.length / 8));
+  buckets.forEach((t, i) => { if (i % every) return; const tx = sv('text', { x: x(i) + bw / 2, y: H - 6, 'text-anchor': 'middle' }); tx.textContent = B < 86400 ? hour(t) : day(t); svg.appendChild(tx); });
+  if (m.kpi && m.kpi.per !== 'day') {
+    svg.appendChild(sv('line', { x1: L, x2: W - R, y1: y(m.kpi.target), y2: y(m.kpi.target), stroke: cv('--muted'), 'stroke-width': 1, 'stroke-dasharray': '4 4' }));
+    const tx = sv('text', { x: W - R, y: y(m.kpi.target) - 4, 'text-anchor': 'end' }); tx.textContent = 'target ' + fmt(m.kpi.target, m); svg.appendChild(tx);
+  }
+  if (stacked) {
+    const w = Math.min(24, Math.max(2, bw * 0.7));
+    vals.forEach((row, i) => {
+      let acc = 0;
+      row.forEach((v, gi) => {
+        if (!v) return;
+        const y1 = y(acc + v), y0 = y(acc); acc += v;
+        const last = row.slice(gi + 1).every(z => !z);
+        const r = last ? Math.min(4, w / 2, (y0 - y1)) : 0;
+        const xx = x(i) + (bw - w) / 2, hh = y0 - y1;
+        const d = r ? `M${xx},${y0} V${y1 + r} Q${xx},${y1} ${xx + r},${y1} H${xx + w - r} Q${xx + w},${y1} ${xx + w},${y1 + r} V${y0} Z` : `M${xx},${y0} V${y1} H${xx + w} V${y0} Z`;
+        if (hh > 0) svg.appendChild(sv('path', { d, fill: groups[gi].color }));
+      });
+    });
+  } else {
+    groups.forEach((g, gi) => {
+      let d = '', pen = false;
+      vals.forEach((row, i) => { const v = row[gi]; if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + (x(i) + bw / 2) + ',' + y(v); pen = true; });
+      svg.appendChild(sv('path', { d, fill: 'none', stroke: g.color, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    });
+  }
+  const cross = sv('line', { y1: T, y2: H - Bm, stroke: cv('--muted'), 'stroke-width': 1, opacity: 0 });
+  svg.appendChild(cross);
+  const tip = el('div', 'tip');
+  const hit = sv('rect', { x: L, y: T, width: W - L - R, height: H - T - Bm, fill: 'transparent' });
+  hit.addEventListener('mousemove', ev => {
+    const r = svg.getBoundingClientRect();
+    const px = (ev.clientX - r.left) * W / r.width;
+    const i = Math.max(0, Math.min(buckets.length - 1, Math.floor((px - L) / bw)));
+    cross.setAttribute('x1', x(i) + bw / 2); cross.setAttribute('x2', x(i) + bw / 2); cross.setAttribute('opacity', .5);
+    tip.replaceChildren();
+    tip.appendChild(el('b', null, B < 86400 ? utc(buckets[i]) : `${day(buckets[i])}${B >= 604800 ? ' (week)' : ''}`));
+    groups.forEach((g, gi) => { const row = el('div'); const n = el('span'); const ic = el('i'); ic.style.background = g.color; n.appendChild(ic); n.appendChild(document.createTextNode(g.name)); row.appendChild(n); row.appendChild(el('span', null, fmt(vals[i][gi], m))); tip.appendChild(row); });
+    if (stacked && groups.length > 1) { const row = el('div'); row.appendChild(el('span', null, 'Total')); row.appendChild(el('span', null, fmt(tops[i], m))); tip.appendChild(row); }
+    tip.style.display = 'block';
+    const cr = card.getBoundingClientRect();
+    let left = ev.clientX - cr.left + 14; if (left + 200 > cr.width) left = ev.clientX - cr.left - 214;
+    tip.style.left = left + 'px'; tip.style.top = (ev.clientY - cr.top + 10) + 'px';
+  });
+  hit.addEventListener('mouseleave', () => { tip.style.display = 'none'; cross.setAttribute('opacity', 0); });
+  svg.appendChild(hit);
+  card.appendChild(svg); card.appendChild(tip);
+  return card;
+}
+
+function methodology() {
+  const b = $('methBody'); b.replaceChildren();
+  const p = (t) => b.appendChild(el('p', null, t));
+  p(`Source: ${M.source_label || M.source}. Data from ${utc(M.start)} to ${utc(M.end)}, in ${step / 60}-minute buckets, refreshed hourly. Each refresh is checked for freshness and completeness and cross-checked against independent queries before it is published; a refresh that fails a check is not published.`);
+  p('Ranges are rolling windows ending at the last complete bucket. Totals add up the buckets in the range; averages are averages of the buckets that have data. Charts use hourly buckets up to 2 days, daily up to 90 days, weekly beyond.');
+  const ul = el('ul');
+  for (const m of D.metrics) {
+    const li = el('li'); li.appendChild(el('strong', null, m.label + ': '));
+    li.appendChild(document.createTextNode((m.description ? m.description + '. ' : '') + `${m.kind === 'sum' ? 'Total' : m.kind === 'avg' ? 'Average' : 'Latest value'}${m.by ? ', split by ' + m.by : ''}. `));
+    if (m.kpi) li.appendChild(document.createTextNode(`KPI ${m.kpi.op === '>=' ? '≥' : '≤'} ${fmt(m.kpi.target, m)}${m.kpi.per === 'day' ? ' per day' : ''}, set by ${m.kpi.set_by}. `));
+    ul.appendChild(li);
+  }
+  for (const d of (M.derived || [])) {
+    const li = el('li'); li.appendChild(el('strong', null, d.label + ': '));
+    li.appendChild(document.createTextNode(d.description || `${d.op === 'ratio' ? METRIC[d.a].label + ' ÷ ' + METRIC[d.b].label : METRIC[d.a].label + ' × ' + d.factor}`));
+    if (d.set_by) li.appendChild(document.createTextNode(` Rate set by hand, not measured: ${d.set_by}.`));
+    ul.appendChild(li);
+  }
+  b.appendChild(ul);
+  for (const n of (M.notes || [])) p(n);
+}
+
+function render() {
+  const [s, e] = window_();
+  document.querySelectorAll('#range button').forEach(bn => bn.setAttribute('aria-pressed', bn.dataset.r === S.range));
+  $('rangeLine').textContent = `${utc(s)} – ${utc(e)}`;
+  const len = e - s, ps = Math.max(M.start, s - len);
+  const tiles = $('tiles'); tiles.replaceChildren();
+  const kt = $('kpiTiles'); kt.replaceChildren();
+  const all = [...D.metrics, ...Object.values(METRIC).filter(m => m.derived)];
+  for (const m of all) {
+    const v = valueOf(m, s, e);
+    const prev = ps < s && s - ps === len ? valueOf(m, ps, s) : null;
+    tile(tiles, m, v, prev, s, e);
+    if (m.kpi) tile(kt, m, v, null, s, e);
+  }
+  $('kpis').hidden = !kt.children.length;
+  const cards = $('cards'); cards.replaceChildren();
+  for (const m of D.metrics) cards.appendChild(chart(m, s, e));
+  methodology();
+}
+
+$('title').textContent = M.title; document.title = M.title;
+$('subtitle').textContent = M.subtitle || '';
+const lagH = (Date.now() / 1000 - M.end) / 3600;
+$('srcLine').textContent = `${M.source_label || M.source} · data to ${utc(M.end)}`;
+if (lagH > 3) $('live').classList.add('stale');
+document.querySelectorAll('#range button').forEach(bn => bn.onclick = () => { S.range = bn.dataset.r; render(); });
+render();
+})();
+</script>
+</body>
+</html>

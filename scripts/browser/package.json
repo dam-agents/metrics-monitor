@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "description": "Headless checks of the built dashboard (installed by kit.yaml install: npm ci here)",
+  "type": "module",
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  }
+}

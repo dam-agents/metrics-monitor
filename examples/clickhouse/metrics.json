@@ -1,0 +1,60 @@
+{
+  "step": 3600,
+  "history_days": 90,
+  "notes": [
+    "Example for a request log table: requests(ts DateTime, team String, status UInt16, latency_ms Float64, cost_usd Float64)."
+  ],
+  "metrics": [
+    {
+      "id": "requests",
+      "label": "Requests",
+      "unit": "requests",
+      "kind": "sum",
+      "by": "team",
+      "query": "SELECT $bucket(ts) AS t, team, count() AS value FROM requests WHERE $range(ts) GROUP BY t, team",
+      "description": "Every logged request, per team"
+    },
+    {
+      "id": "errors",
+      "label": "Failed requests",
+      "unit": "requests",
+      "kind": "sum",
+      "query": "SELECT $bucket(ts) AS t, countIf(status >= 500) AS value FROM requests WHERE $range(ts) GROUP BY t",
+      "description": "Requests answered with a 5xx status"
+    },
+    {
+      "id": "latency_p50",
+      "label": "Median latency",
+      "unit": "ms",
+      "kind": "avg",
+      "combine": "mean",
+      "query": "SELECT $bucket(ts) AS t, quantile(0.5)(latency_ms) AS value FROM requests WHERE $range(ts) GROUP BY t",
+      "description": "Median per hour; a longer range shows the mean of the hourly medians",
+      "kpi": {
+        "op": "<=",
+        "target": 800,
+        "set_by": "replace with your agreed target"
+      }
+    },
+    {
+      "id": "spend",
+      "label": "Spend",
+      "unit": "$",
+      "kind": "sum",
+      "by": "team",
+      "query": "SELECT $bucket(ts) AS t, team, sum(cost_usd) AS value FROM requests WHERE $range(ts) GROUP BY t, team",
+      "description": "Billed cost recorded with each request"
+    }
+  ],
+  "derived": [
+    {
+      "id": "error_rate",
+      "label": "Error rate",
+      "unit": "%",
+      "op": "ratio",
+      "a": "errors",
+      "b": "requests",
+      "factor": 100
+    }
+  ]
+}

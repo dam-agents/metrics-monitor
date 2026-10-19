@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/dam-agents/dam-starter-kits/main/kit.schema.json
+# The starter kit this definition is offered as. It lives beside the
+# definition it describes, so a change to the agent and a change to the kit
+# are the same commit.
+schemaVersion: v1
+id: metrics-monitor
+name: Metrics Monitor
+tagline: An hourly, cross-checked dashboard of your data, and answers from it in Slack.
+description: >-
+  Watches one data source (Prometheus or Mimir, ClickHouse, or anything a
+  command can read), refreshes a dashboard artifact every hour, and publishes
+  it only after the new data has been checked for freshness and completeness
+  and cross-checked against independent queries. You choose whether the
+  dashboard is private, public, or shared with named people. Added to a team
+  Slack channel, it answers questions straight from live data, always with
+  the unit, the exact time window and the scope.
+category: knowledge
+icon: chart
+docsUrl: https://github.com/dam-agents/metrics-monitor
+# The publish step relies on Claude Code's permission allow-list
+# (docs/publish.md), and the definition is written for it.
+harnesses: [claude-code]
+
+# `self` is this repository, at the commit the kit was resolved at. Into $HOME,
+# so the definition is /home/agent and everything an instance owns (its
+# config, metrics, snapshots, logs, dashboard) lives in work/.
+seed:
+  self: true
+  into: home
+
+# The headless browser check of the built page (scripts/browser/). The image
+# ships the browser itself; this installs only the Node client for it.
+install:
+  command: cd "$HOME/scripts/browser" && npm ci --no-audit --no-fund --silent
+
+# On: the gateway injects a Connection's credential only into a request that
+# names it, so nothing else this agent runs has its credentials replaced. A
+# Custom Header connection for the data source is named through its path
+# prefix: onboarding writes `source_url` as https://<host>/__platform_conn/<id>/...
+# (docs/sources.md), and the gateway strips the prefix before the request leaves.
+requireConnectionAddress: true
+
+# Data sources live on hosts no list can know ahead of time (internal routes,
+# cluster DNS, a cloud warehouse). The owner can narrow it after create to the
+# source's host.
+egressPreset: all
+
+connections:
+  - accepts: [custom-header]
+    required: false
+    note: >-
+      The data source's credential, if it needs one: an API key or token
+      header for its host (for example X-ClickHouse-Key, Authorization, or a
+      Grafana Cloud token). The gateway adds it on the way out; the agent
+      never sees it. A source with no authentication (an in-cluster
+      Prometheus, an anonymous Mimir tenant) needs none.
+  - accepts: [github, github-enterprise]
+    required: false
+    note: >-
+      Optional. Read on this definition repository, so the agent can check
+      for a newer version of itself and propose changes as a patch. It never
+      needs write access.
+
+channels:
+  - type: slack
+    note: >-
+      The team channel where people ask about the data and get answers from
+      live queries. Turn on ambient mode if the agent should read along and
+      chime in only when it is clearly asked; off, it answers mentions.
+
+# Held by the platform until onboarding completes, so it never refreshes a
+# half-configured instance. Hourly at :00 UTC: a cron holds UTC, and hourly is
+# the same wall clock in every zone, so there is no DST or timezone database
+# to go wrong (an rrule schedule once stopped firing on a tzdata error).
+# `fresh`: every run is its own session and reads CLAUDE.md from the top.
+schedules:
+  - name: metrics-monitor-refresh-hourly
+    cron: "0 * * * *"
+    sessionMode: fresh
+    description: Refresh, check and publish the dashboard; report failures by DM.
+    task: >-
+      Run the hourly refresh: CLAUDE.md → "The hourly run". Publish only if
+      scripts/refresh.sh exits 0. On success post nothing.

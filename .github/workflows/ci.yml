@@ -1,0 +1,27 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax
+        run: |
+          for f in $(git ls-files '*.sh'); do bash -n "$f"; done
+          python3 -m py_compile $(git ls-files '*.py')
+      - name: Definition
+        run: bash scripts/validate-definition.sh .
+      - name: Browser
+        run: |
+          cd scripts/browser && npm ci --no-audit --no-fund
+          npx playwright-core install --with-deps chromium-headless-shell
+      - name: Tests
+        run: bash scripts/tests/run.sh
