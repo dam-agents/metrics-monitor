@@ -57,6 +57,10 @@ EOF
     its id. Write `source_url` with the connection's path prefix,
     `https://<host>/__platform_conn/<id>/<path>`; the gateway adds the header
     and strips the prefix.
+  - **Let the agent reach it**: the kit starts on Trusted defaults, which do
+    not include the source. Tell the owner the exact host (and port, if not
+    443) and ask them to allow only that host in this agent's network
+    settings. Never ask for all hosts. Skip this for `demo`.
   - **Reach it now**: `python3 "$HOME/scripts/ask.py" raw '<a trivial query>'`
     (`up`, `SELECT 1`). It fails: read [`docs/sources.md`](docs/sources.md) →
     **When the source does not answer**, and tell the person exactly what

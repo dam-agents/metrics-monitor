@@ -17,8 +17,12 @@ already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md
   of GPUs and tokens.
 - README → **Set it up** starts from the starter kit in the DAM catalog; the
   hand install is under **Without the starter kit**.
+- The kit starts on **Trusted defaults** egress, not all hosts. Onboarding
+  names the source's host and the owner allows that one host.
 
-**Upgrade:** none. A running instance keeps its own `work/metrics.json`. An
+**Upgrade:** a running instance keeps its egress rules; if it was created
+with all hosts open, the owner can switch to Trusted defaults and add the
+source's host. A running instance keeps its own `work/metrics.json`. An
 instance on the `demo` source picks up the new metrics on its next refresh,
 which pulls their full history once.
 

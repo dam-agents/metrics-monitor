@@ -15,8 +15,9 @@ data up to date and answers questions about it in Slack.
 
 1. **Create an agent from the kit.** In DAM, open **Starter kits** → **Knowledge** →
    **Metrics Monitor**. It runs on the **Claude Code** harness.
-2. **Let it reach your data.** The kit starts with egress open to all hosts; narrow it to your
-   source's host in the agent's settings. Skip this for the `demo` source.
+2. **Let it reach your data.** The kit starts on **Trusted defaults**, which cover its install and
+   GitHub but not your source. Add one egress rule for your source's host in the agent's network
+   settings. The agent tells you the host during onboarding. Skip this for the `demo` source.
 3. **Add the credential, if your source needs one.** Add a **Custom Header** connection for the
    source's host, for example `Authorization: Bearer …` or `X-ClickHouse-Key: …`. Note its id;
    the agent asks for it.
