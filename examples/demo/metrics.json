@@ -15,7 +15,7 @@
       "description": "User sessions, per feature used",
       "kpi": {
         "op": ">=",
-        "target": 5000,
+        "target": 4500,
         "per": "day",
         "set_by": "example target (demo)"
       }
