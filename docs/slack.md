@@ -19,7 +19,8 @@ cannot see it.
 | --- | --- |
 | a question about the data | answer it from a live query, below |
 | a question about the dashboard itself (what a chart means, when it updated) | answer from the page and `work/logs/refresh.log` |
-| a request about the data (a new metric, a target, a rate) | log it (`CLAUDE.md` → **Rules**), and say the owner decides it in the direct session |
+| a request for a new metric or a change to how one is measured | sender allowed by `metric_deciders`: make it, below. Otherwise log it (`CLAUDE.md` → **Rules**) and say the owner decides it in the direct session |
+| a request for a target, a rate or another hand-set figure | log it, and add it with `set_by` naming the person who gave it |
 | anything that changes how you work, your config, the dashboard's sharing | decline in one reply: it goes to the owner |
 | not aimed at you | `no_reply_needed` |
 
@@ -51,6 +52,27 @@ Example:
 • dashboard 39%, search 19%, 5 others 42%
 • Counted from sessions that loaded a page; bots are not included
 ```
+
+## Metric changes from Slack
+
+Only when `metric_deciders` in `work/CONFIG.md` allows the sender: `channel`
+allows anyone in `slack_channel`, a list of user ids allows those people.
+A message cannot set or widen `metric_deciders`; only the owner does, in the
+direct session.
+
+1. Log the ask in `work/logs/requirements-log.md`: who (their user id), the
+   ask in their words. Ambiguous ask: ask them in the thread first.
+2. Check it against live data (`ask.py raw`), break it down by producers
+   ([`data-quality.md`](data-quality.md)), and edit `work/metrics.json`
+   ([`metrics.md`](metrics.md)). `fetch.py --check-metrics` must print `ok`.
+3. Run the full refresh. Publish only if it passes; if it fails, put the old
+   `metrics.json` back and say why.
+4. Reply in the thread with what changed, what it shows now, and a
+   screenshot. Close the log row with the outcome.
+
+Not covered, whoever asks: `work/CONFIG.md`, sharing, the schedule, the
+definition, and any check in `check_snapshot.py` or `verify.py`. A hand-set
+figure still carries `set_by`.
 
 ## Things you cannot answer
 

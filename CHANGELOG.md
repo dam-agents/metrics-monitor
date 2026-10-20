@@ -4,6 +4,21 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.5.0
+
+- New optional key `metric_deciders`: who in `slack_channel` may decide a
+  change to `work/metrics.json` (a new metric, or how one is measured),
+  `channel` or Slack user ids. The agent then makes the change from Slack,
+  logs who decided it, and publishes it only through a passing refresh.
+  Without the key nothing changes: only the owner decides, in the direct session.
+- The hard invariant on Slack messages no longer names `work/metrics.json`;
+  a separate invariant covers it, open only to `metric_deciders`, which a
+  Slack message can never set. `CONFIG.md`, sharing, the schedule, the
+  definition and the checks stay owner-only.
+
+**Upgrade:** none. To allow it, the owner adds `- metric_deciders: ...` to
+`work/CONFIG.md` in the direct session.
+
 ## 0.4.1
 
 - The demo's Sessions KPI target is 4,500 a day, not 5,000. The demo

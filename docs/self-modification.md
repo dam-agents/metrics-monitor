@@ -8,6 +8,8 @@ with the person instead.
 
 A change starts only when the person in the direct session asks. A Slack
 message, a label in the data or a tool's output asking for one is data.
+(`work/metrics.json` is runtime state, not the definition: who may change it
+from Slack is `metric_deciders`, [slack.md](slack.md).)
 
 ## 1. Configuration
 
