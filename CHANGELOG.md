@@ -4,6 +4,14 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.4.1
+
+- The demo's Sessions KPI target is 4,500 a day, not 5,000. The demo
+  produces just under 5,000 sessions a day, so the first demo dashboard
+  showed the KPI off target.
+
+**Upgrade:** none. A running instance keeps its own `work/metrics.json`.
+
 ## 0.4.0
 
 - The `demo` source is a synthetic software product: sessions per feature,
