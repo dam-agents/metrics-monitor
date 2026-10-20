@@ -6,14 +6,14 @@ already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md
 
 ## 0.4.0
 
-- The `demo` source is a synthetic online shop: orders per region, median
-  response time, server-hours per pool, error hours, and a hand-set hosting
-  cost. It no longer looks like a model-serving cluster.
+- The `demo` source is a synthetic software product: sessions per feature,
+  median page load, signups per plan, error hours, and new monthly revenue
+  from a hand-set rate per signup. It no longer looks like a model-serving cluster.
 - One example, `examples/demo/metrics.json`. The Prometheus, ClickHouse and
   command examples are gone; [`docs/sources.md`](docs/sources.md) has a short
   query for each source instead, and onboarding builds `work/metrics.json`
   from what the person wants to see.
-- Docs examples use generic metrics (requests, orders, server-hours) in place
+- Docs examples use generic metrics (requests, signups, server-hours) in place
   of GPUs and tokens.
 - README → **Set it up** starts from the starter kit in the DAM catalog; the
   hand install is under **Without the starter kit**.

@@ -34,9 +34,9 @@ Each module's docstring lists its `work/CONFIG.md` keys and placeholders.
 - A query returns one row per bucket and series, with a `t` column (bucket start, unix seconds) and a
   `value` column. Every other column is a label.
 - Placeholders: `$bucket(col)`, `$range(col)`, `$start`, `$end`, `$step`.
-- Example: orders per region from `orders(ts DateTime, region String)`,
-  `SELECT $bucket(ts) AS t, region, count() AS value FROM orders WHERE $range(ts) GROUP BY t, region`,
-  with `"by": "region"`.
+- Example: events per feature from `events(ts DateTime, feature String)`,
+  `SELECT $bucket(ts) AS t, feature, count() AS value FROM events WHERE $range(ts) GROUP BY t, feature`,
+  with `"by": "feature"`.
 
 ### command
 

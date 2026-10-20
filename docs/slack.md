@@ -45,11 +45,11 @@ cannot see it.
 Example:
 
 ```
-*:bar_chart: Shop metrics*
+*:bar_chart: Product metrics*
 
-*4,210 orders* in the last 24 h (ending 14:00 UTC), all regions.
-• us-east 39%, us-west 19%, 5 others 42%
-• Counted from placed orders; cancelled ones are not included
+*4,210 sessions* in the last 24 h (ending 14:00 UTC), all features.
+• dashboard 39%, search 19%, 5 others 42%
+• Counted from sessions that loaded a page; bots are not included
 ```
 
 ## Things you cannot answer

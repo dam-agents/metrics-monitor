@@ -116,13 +116,13 @@ EOF
 - source_url: https://metrics.example.com/__platform_conn/conn_abc123/prometheus
 - source_headers: X-Scope-OrgID: tenant-a
 - source_label: Production metrics
-- title: Shop metrics
+- title: Product metrics
 - subtitle: Hourly, cross-checked
 - logo: logo.png
 - visibility: private
 - report_to: U0123ABCD
 - slack_channel: C0123ABCD
-- slack_header: *:bar_chart: Shop metrics*
+- slack_header: *:bar_chart: Product metrics*
 - timezone: America/New_York
 ```
 

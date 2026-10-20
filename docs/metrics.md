@@ -36,7 +36,7 @@ requirements log. `python3 "$HOME/scripts/fetch.py" --check-metrics` checks it.
 - `id`: lowercase, stable. It keys the snapshot, so renaming it re-pulls the full history.
 - `label`, `unit`, `description`: written for the reader. Plain words, no jargon in the label.
 - `kind`: how buckets add up over a range:
-  - `sum`: a count or total per bucket (requests, orders, server-hours, spend). The range value is the sum.
+  - `sum`: a count or total per bucket (requests, signups, server-hours, spend). The range value is the sum.
   - `avg`: a level (latency, utilisation, queue depth). The range value is the mean of the buckets that have data.
   - `last`: a state (users, capacity). The range value is the last bucket.
 - `combine`: how series in one bucket add up for "all": `sum` (default for `sum`), `mean`

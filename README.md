@@ -33,8 +33,8 @@ The agent then onboards you, and asks:
 3. **Who may see it**, an optional logo, the Slack channel, and who gets a DM when a run fails.
 
 Then it runs the first refresh, shows you the page and publishes it. The hourly schedule starts
-when onboarding is done. To try it without real data, pick the `demo` source: a synthetic online
-shop with orders, response time, server-hours and hosting cost.
+when onboarding is done. To try it without real data, pick the `demo` source: a synthetic software
+product with sessions per feature, page load time, signups and new revenue.
 
 Optional: add a **GitHub** connection with read access to this repository. The agent then checks
 for newer versions of itself and proposes upgrades as a patch. It never needs write access.
