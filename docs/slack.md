@@ -45,11 +45,11 @@ cannot see it.
 Example:
 
 ```
-*:bar_chart: Serving metrics*
+*:bar_chart: Shop metrics*
 
-*1.42M requests* in the last 24 h (ending 14:00 UTC), all teams.
-• team-a 61%, team-b 22%, 5 others 17%
-• Counted from completed requests; failed ones are not included
+*4,210 orders* in the last 24 h (ending 14:00 UTC), all regions.
+• us-east 39%, us-west 19%, 5 others 42%
+• Counted from placed orders; cancelled ones are not included
 ```
 
 ## Things you cannot answer

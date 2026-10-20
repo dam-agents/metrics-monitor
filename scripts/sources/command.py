@@ -3,7 +3,7 @@
 The metric's `query` is a shell command, run from the definition directory with
   MM_START  MM_END  MM_STEP   (unix seconds, seconds), and MM_WORK (the work directory),
 in its environment. It prints JSON lines, one per bucket and series:
-  {"t": 1760000000, "value": 12.5, "model": "a"}
+  {"t": 1760000000, "value": 12.5, "plan": "pro"}
 `t` is the bucket start, `value` a number; every other key is a label. A window query runs the same
 command with MM_STEP = MM_END - MM_START. Put the command's script in work/sources/ (instance data),
 or in scripts/sources/ if it is general enough to ship with the kit.

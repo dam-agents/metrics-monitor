@@ -86,7 +86,7 @@ if [ -f "$WORK/metrics.json" ]; then
   if out="$(python3 "$DEF/scripts/fetch.py" --check-metrics 2>&1)"; then ok metrics "$out"
   else fail metrics "$out" "edit work/metrics.json: docs/metrics.md"; fi
 else
-  fail metrics "work/metrics.json is missing" "write it with the person, from examples/<source>/metrics.json: ONBOARDING.md → 2. Ask"
+  fail metrics "work/metrics.json is missing" "write it with the person, as docs/metrics.md shows: ONBOARDING.md → 2. Ask"
 fi
 
 if [ "$STRUCTURE" = 1 ]; then

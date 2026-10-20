@@ -24,7 +24,7 @@ Look for:
 - **Separate engines that look like duplicates**: several series per pod can be real (one per
   data-parallel rank, with its own port or `engine` label). Check before you deduplicate.
 - **Role splits**: a system that reports the same thing at two stages (a gateway and a backend,
-  prefill and decode) counts it twice if you pool them. Pick one stage.
+  a queue and its worker) counts it twice if you pool them. Pick one stage.
 
 Write down what you found and what you excluded in `work/CLAUDE.md`, and add a one-line
 `notes` entry in `work/metrics.json`.
@@ -39,15 +39,15 @@ Write down what you found and what you excluded in `work/CLAUDE.md`, and add a o
 
 ## Time-weighted counts
 
-To count things that come and go (GPUs, pods, users online), weight by time:
+To count things that come and go (servers, pods, users online), weight by time:
 
 ```promql
-sum_over_time(count(DCGM_FI_DEV_GPU_UTIL)[$step:1m]) / 60      # GPU-hours per hourly bucket
+sum_over_time(count(up{job="web"} == 1)[$step:1m]) / 60      # server-hours per hourly bucket
 ```
 
 `avg_over_time` over a subquery skips the minutes where the count was absent. A pool that exists
-for 10 minutes of an hour then reads as if it ran the whole hour. That once showed a 4-GPU
-pool as 83 GPUs.
+for 10 minutes of an hour then reads as if it ran the whole hour. That once showed a pool of 4
+as 83.
 
 ## Values the producer gets wrong
 
@@ -76,8 +76,8 @@ avg(clamp_max(saturation, 1))
 
 ## Cross-check with an independent source
 
-Where two systems measure the same thing (a gateway's request count and the backend's, Kubernetes
-GPU requests and DCGM's count), compare them once when you add the metric, and again whenever the
+Where two systems measure the same thing (a gateway's request count and the backend's, the scheduler's
+node count and the exporter's), compare them once when you add the metric, and again whenever the
 number moves unexpectedly. Agreement within about 1% is normal. Record the comparison in
 `work/CLAUDE.md`. If it should run every hour, give the metric a `verify_query` that reads the
 other system.

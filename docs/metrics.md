@@ -3,7 +3,7 @@
 The file that says what is measured. It belongs to this instance and is
 written with the person during onboarding. Changes to it go in the
 requirements log. `python3 "$HOME/scripts/fetch.py" --check-metrics` checks it.
-`examples/*/metrics.json` are starting points.
+`examples/demo/metrics.json` is a complete one, for the `demo` source.
 
 ## Top level
 
@@ -36,12 +36,12 @@ requirements log. `python3 "$HOME/scripts/fetch.py" --check-metrics` checks it.
 - `id`: lowercase, stable. It keys the snapshot, so renaming it re-pulls the full history.
 - `label`, `unit`, `description`: written for the reader. Plain words, no jargon in the label.
 - `kind`: how buckets add up over a range:
-  - `sum`: a count or total per bucket (requests, tokens, GPU-hours, spend). The range value is the sum.
+  - `sum`: a count or total per bucket (requests, orders, server-hours, spend). The range value is the sum.
   - `avg`: a level (latency, utilisation, queue depth). The range value is the mean of the buckets that have data.
   - `last`: a state (users, capacity). The range value is the last bucket.
 - `combine`: how series in one bucket add up for "all": `sum` (default for `sum`), `mean`
   (default otherwise) or `max`.
-- `by`: the label that splits the query's series (team, model, region). Leave it out when the
+- `by`: the label that splits the query's series (team, region, plan). Leave it out when the
   query returns one series. Several series without `by` is an error, so nothing is summed by
   accident. The page colours the top 5 series and folds the rest into "Other".
 - `query`: in the source's language ([sources.md](sources.md)).
@@ -60,12 +60,12 @@ requirements log. `python3 "$HOME/scripts/fetch.py" --check-metrics` checks it.
 Computed on the page from measured metrics, so they always match what is shown.
 
 ```json
-{"id": "cost", "label": "Compute cost", "unit": "$", "op": "times", "a": "gpu_hours", "factor": 3.0,
- "set_by": "Alex, 2026-10-02: $3 per GPU-hour; set by hand, not measured"}
+{"id": "cost", "label": "Compute cost", "unit": "$", "op": "times", "a": "server_hours", "factor": 0.4,
+ "set_by": "Alex, 2026-10-02: $0.40 per server-hour; set by hand, not measured"}
 {"id": "err_rate", "label": "Error rate", "unit": "%", "op": "ratio", "a": "errors", "b": "requests", "factor": 100}
 ```
 
-- `times`: `a` × `factor`. `a` must be a `sum` metric: multiply GPU-hours by a rate, not GPUs.
+- `times`: `a` × `factor`. `a` must be a `sum` metric: multiply server-hours by a rate, not servers.
   A `times` factor is a hand-set rate, so `set_by` is required and the page labels it.
 - `ratio`: `a` ÷ `b` × `factor` (default 1), over the same range.
 

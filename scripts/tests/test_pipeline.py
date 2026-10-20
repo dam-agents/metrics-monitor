@@ -97,7 +97,7 @@ class Adapters(unittest.TestCase):
     def test_demo_window_matches_range(self):
         from sources.demo import Source
         s = Source({})
-        for q in ("requests", "gpus", "errors"):
+        for q in ("orders", "servers", "errors"):
             rng = sum(v for x in s.range(q, 0, 86400 * 3, 3600) for _, v in x["points"])
             win = sum(x["value"] for x in s.window(q, 0, 86400 * 3))
             self.assertAlmostEqual(rng, win, places=6)
@@ -129,14 +129,15 @@ class Checks(unittest.TestCase):
 
     def test_total_fell(self):
         def drop(d):
-            d["series"]["requests"][0]["points"] = d["series"]["requests"][0]["points"][100:]
+            s = max(d["series"]["orders"], key=lambda x: sum(v for _, v in x["points"]))
+            s["points"] = s["points"][100:]
         r = run("python3", "scripts/check_snapshot.py", self.tamper(drop), self.snap)
         self.assertEqual(r.returncode, 4)
         self.assertIn("fell", r.stdout)
 
     def test_series_gone(self):
         r = run("python3", "scripts/check_snapshot.py",
-                self.tamper(lambda d: d["series"]["requests"].pop()), self.snap)
+                self.tamper(lambda d: d["series"]["orders"].pop()), self.snap)
         self.assertEqual(r.returncode, 4)
         self.assertIn("series gone", r.stdout)
 
@@ -149,11 +150,11 @@ class Checks(unittest.TestCase):
 
     def test_verify_catches_drift(self):
         def inflate(d):
-            for s in d["series"]["gpu_hours"]:
+            for s in d["series"]["server_hours"]:
                 s["points"] = [[t, v * 1.05] for t, v in s["points"]]
         r = run("python3", "scripts/verify.py", "--check", "--snapshot", self.tamper(inflate))
         self.assertEqual(r.returncode, 2)
-        self.assertIn("FAIL  gpu_hours", r.stdout)
+        self.assertIn("FAIL  server_hours", r.stdout)
 
 
 class Logo(unittest.TestCase):

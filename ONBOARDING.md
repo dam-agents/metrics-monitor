@@ -75,7 +75,8 @@ EOF
   [`docs/dashboard.md`](docs/dashboard.md): list every number, chart and
   table the reference shows, find each one in the source (or say plainly
   that the source does not have it), and agree `work/metrics.json` with the
-  person item by item, starting from `examples/<source>/metrics.json`.
+  person item by item. [`docs/metrics.md`](docs/metrics.md) has the shape, and
+  [`docs/sources.md`](docs/sources.md) has a query for each source.
   Before you trust a series, **break it down by its producers**
   ([`docs/data-quality.md`](docs/data-quality.md)). If the reference's layout is
   not the default page, build the instance's own template from it
@@ -115,13 +116,13 @@ EOF
 - source_url: https://metrics.example.com/__platform_conn/conn_abc123/prometheus
 - source_headers: X-Scope-OrgID: tenant-a
 - source_label: Production metrics
-- title: Serving metrics
+- title: Shop metrics
 - subtitle: Hourly, cross-checked
 - logo: logo.png
 - visibility: private
 - report_to: U0123ABCD
 - slack_channel: C0123ABCD
-- slack_header: *:bar_chart: Serving metrics*
+- slack_header: *:bar_chart: Shop metrics*
 - timezone: America/New_York
 ```
 

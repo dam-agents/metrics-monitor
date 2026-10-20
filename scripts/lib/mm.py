@@ -113,7 +113,7 @@ def load_metrics(path=None):
             errs.append(f"{where}: times needs a numeric factor")
         a_m = next((m for m in ms if m.get("id") == d.get("a")), None)
         if d.get("op") == "times" and a_m and a_m.get("kind") != "sum":
-            errs.append(f"{where}: times multiplies a total, so `a` must be a sum metric (e.g. GPU-hours, not GPUs)")
+            errs.append(f"{where}: times multiplies a total, so `a` must be a sum metric (e.g. server-hours, not servers)")
         if d.get("op") == "times" and not d.get("set_by"):
             errs.append(f"{where}: a rate set by hand needs set_by (who, when)")
         if not d.get("label") or not d.get("unit"):

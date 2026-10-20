@@ -10,7 +10,7 @@ CONFIG.md keys:
 
 Queries are PromQL. `$step` is replaced by the bucket length ("3600s") in range queries and by the
 whole window in window queries, so one expression serves both:
-  sum by (model) (increase(tokens_total[$step]))
+  sum by (team) (increase(requests_total[$step]))
 Prometheus stamps a range point at the END of its lookback; this adapter shifts it to the bucket start.
 """
 
