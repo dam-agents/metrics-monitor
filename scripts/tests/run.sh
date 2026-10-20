@@ -42,7 +42,7 @@ name="unit tests"
 t python3 scripts/tests/test_pipeline.py
 
 name="ask.py answers live with unit and UTC window"
-t bash -c 'out="$(python3 scripts/ask.py requests --since 24h)" && echo "$out" | grep -qE "^Requests served: [0-9.]+[KMB]? requests$" && echo "$out" | grep -qE "^window: .* UTC .* UTC \(24 h\)"'
+t bash -c 'out="$(python3 scripts/ask.py sessions --since 24h)" && echo "$out" | grep -qE "^Sessions: [0-9.]+[KMB]? sessions$" && echo "$out" | grep -qE "^window: .* UTC .* UTC \(24 h\)"'
 
 # Every CONFIG.md key is named in CLAUDE.md, accepted by the verifier, and
 # the ONBOARDING example uses only known keys.

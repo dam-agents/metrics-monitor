@@ -4,6 +4,28 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.4.0
+
+- The `demo` source is a synthetic software product: sessions per feature,
+  median page load, signups per plan, error hours, and new monthly revenue
+  from a hand-set rate per signup. It no longer looks like a model-serving cluster.
+- One example, `examples/demo/metrics.json`. The Prometheus, ClickHouse and
+  command examples are gone; [`docs/sources.md`](docs/sources.md) has a short
+  query for each source instead, and onboarding builds `work/metrics.json`
+  from what the person wants to see.
+- Docs examples use generic metrics (requests, signups, server-hours) in place
+  of GPUs and tokens.
+- README → **Set it up** starts from the starter kit in the DAM catalog; the
+  hand install is under **Without the starter kit**.
+- The kit starts on **Trusted defaults** egress, not all hosts. Onboarding
+  names the source's host and the owner allows that one host.
+
+**Upgrade:** a running instance keeps its egress rules; if it was created
+with all hosts open, the owner can switch to Trusted defaults and add the
+source's host. A running instance keeps its own `work/metrics.json`. An
+instance on the `demo` source picks up the new metrics on its next refresh,
+which pulls their full history once.
+
 ## 0.3.2
 
 - README → **Set it up** is the one way to use the kit today: the catalog

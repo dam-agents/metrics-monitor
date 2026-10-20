@@ -13,33 +13,16 @@ data up to date and answers questions about it in Slack.
 
 ## Set it up
 
-This works on any DAM today:
-
-1. **Create an agent** on the **Claude Code** harness.
-2. **Let it reach your data.** In the agent's settings, under egress, allow your source's host.
-   Skip this for the `demo` source.
+1. **Create an agent from the kit.** In DAM, open **Starter kits** → **Knowledge** →
+   **Metrics Monitor**. It runs on the **Claude Code** harness.
+2. **Let it reach your data.** The kit starts on **Trusted defaults**, which cover its install and
+   GitHub but not your source. Add one egress rule for your source's host in the agent's network
+   settings. The agent tells you the host during onboarding. Skip this for the `demo` source.
 3. **Add the credential, if your source needs one.** Add a **Custom Header** connection for the
    source's host, for example `Authorization: Bearer …` or `X-ClickHouse-Key: …`. Note its id;
    the agent asks for it.
 4. **Optional: bind a Slack channel** to the agent, so the team can ask questions. Turn on
    ambient mode if it should read along and answer only when asked.
-5. **Send the agent this message:**
-
-   ```text
-   Install the Metrics Monitor starter kit into your home directory with the commands below,
-   then read $HOME/CLAUDE.md and follow $HOME/ONBOARDING.md. I set this up by hand, so create
-   the hourly schedule at the end yourself. If the checkout stops because a file is in the way,
-   tell me which files and stop.
-
-   cd "$HOME" && git init -q
-   git remote get-url origin >/dev/null 2>&1 || git remote add origin https://github.com/dam-agents/metrics-monitor
-   git fetch -q origin main && git checkout -q -B main origin/main
-   cd "$HOME/scripts/browser" && npm ci --no-audit --no-fund --silent
-   ```
-
-The checkout adds the kit's files to the agent's home and leaves your other files in place. It
-never overwrites a file: if a file with the same name as a kit file is already there, the
-checkout stops and the agent tells you which one.
 
 The agent then onboards you, and asks:
 
@@ -48,11 +31,33 @@ The agent then onboards you, and asks:
    dashboard to follow. The agent maps each item to your data and tells you what it can't find.
 3. **Who may see it**, an optional logo, the Slack channel, and who gets a DM when a run fails.
 
-Then it runs the first refresh, shows you the page, publishes it and creates the hourly schedule.
-To try it without real data, pick the `demo` source.
+Then it runs the first refresh, shows you the page and publishes it. The hourly schedule starts
+when onboarding is done. To try it without real data, pick the `demo` source: a synthetic software
+product with sessions per feature, page load time, signups and new revenue.
 
 Optional: add a **GitHub** connection with read access to this repository. The agent then checks
 for newer versions of itself and proposes upgrades as a patch. It never needs write access.
+
+### Without the starter kit
+
+On a DAM whose catalog does not list this kit, create a Claude Code agent, do steps 2 to 4, and
+send it this message:
+
+```text
+Install the Metrics Monitor starter kit into your home directory with the commands below,
+then read $HOME/CLAUDE.md and follow $HOME/ONBOARDING.md. I set this up by hand, so create
+the hourly schedule at the end yourself. If the checkout stops because a file is in the way,
+tell me which files and stop.
+
+cd "$HOME" && git init -q
+git remote get-url origin >/dev/null 2>&1 || git remote add origin https://github.com/dam-agents/metrics-monitor
+git fetch -q origin main && git checkout -q -B main origin/main
+cd "$HOME/scripts/browser" && npm ci --no-audit --no-fund --silent
+```
+
+The checkout adds the kit's files to the agent's home and leaves your other files in place. It
+never overwrites a file: if a file with the same name as a kit file is already there, the
+checkout stops and the agent tells you which one.
 
 ### Who can see the dashboard
 

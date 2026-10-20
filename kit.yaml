@@ -40,10 +40,11 @@ install:
 # (docs/sources.md), and the gateway strips the prefix before the request leaves.
 requireConnectionAddress: true
 
-# Data sources live on hosts no list can know ahead of time (internal routes,
-# cluster DNS, a cloud warehouse). The owner can narrow it after create to the
-# source's host.
-egressPreset: all
+# Trusted defaults: the package registries and GitHub the install and the
+# upgrade check need, and nothing else. The data source's host is the one
+# addition, and the owner allows it during onboarding (ONBOARDING.md →
+# Source). The demo source is synthetic and needs no network.
+egressPreset: trusted
 
 connections:
   - accepts: [custom-header]

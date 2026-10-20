@@ -14,8 +14,8 @@ column `value`; every other column is a label. Placeholders, filled in by this a
   $range(col)   col >= start AND col < end
   $start $end $step   numbers (unix seconds, seconds)
 Example:
-  SELECT $bucket(ts) AS t, model, sum(tokens) AS value
-  FROM requests WHERE $range(ts) GROUP BY t, model
+  SELECT $bucket(ts) AS t, team, count() AS value
+  FROM requests WHERE $range(ts) GROUP BY t, team
 A window query is the same SQL with one bucket spanning the whole window.
 Values are passed as numbers the adapter computes itself, never user text, so there is nothing to escape.
 """

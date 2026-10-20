@@ -29,7 +29,7 @@ table and filter. For each one, write down:
 - **what it shows**, in the person's words ("requests per team, per day");
 - **unit and grain**: a count over time, a level (latency, utilisation) or a
   state (users, capacity), so its `kind` in `metrics.json`; and how it is split
-  (by team, region, model) for `by`;
+  (by team, region, plan) for `by`;
 - **where it comes from**: a series, a table or a query in the source, found
   by exploring it with `ask.py raw`. Break each candidate down by its producers
   before you trust it ([data-quality.md](data-quality.md)).

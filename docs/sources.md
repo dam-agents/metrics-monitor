@@ -25,6 +25,8 @@ Each module's docstring lists its `work/CONFIG.md` keys and placeholders.
   (`err-mimir-max-query-length`), so the adapter splits ranges into chunks of this size. Default 720.
 - In queries, `$step` is replaced by the bucket length in range queries and by the whole window in
   window queries, so one expression serves both: `sum(increase(x_total[$step]))`.
+- Example: requests per team, `sum by (team) (increase(http_requests_total[$step]))`, with
+  `"by": "team"`.
 
 ### clickhouse
 
@@ -32,13 +34,27 @@ Each module's docstring lists its `work/CONFIG.md` keys and placeholders.
 - A query returns one row per bucket and series, with a `t` column (bucket start, unix seconds) and a
   `value` column. Every other column is a label.
 - Placeholders: `$bucket(col)`, `$range(col)`, `$start`, `$end`, `$step`.
+- Example: events per feature from `events(ts DateTime, feature String)`,
+  `SELECT $bucket(ts) AS t, feature, count() AS value FROM events WHERE $range(ts) GROUP BY t, feature`,
+  with `"by": "feature"`.
 
 ### command
 
 - The metric's `query` is a shell command, run from `$HOME` with `MM_START`, `MM_END`, `MM_STEP` and
   `MM_WORK` set.
 - It prints JSON lines: `{"t": <bucket start>, "value": <number>, "<label>": "..."}`.
-- Put the script in `work/sources/`. `examples/command/` has one.
+- Put the script in `work/sources/`. For example, daily signups per plan from a REST API:
+
+  ```python
+  import json, os, urllib.request
+  start, end, step = (int(os.environ[k]) for k in ("MM_START", "MM_END", "MM_STEP"))
+  url = "https://api.example.com/__platform_conn/CONN_ID/v1/signups"
+  with urllib.request.urlopen(f"{url}?from={start}&to={end}&bucket={step}", timeout=60) as r:
+      for row in json.load(r)["buckets"]:
+          print(json.dumps({"t": row["start"], "value": row["count"], "plan": row["plan"]}))
+  ```
+
+  with the metric's `query` set to `python3 "$MM_WORK/sources/signups.py"`.
 
 ## Credentials
 
@@ -75,7 +91,7 @@ work outward:
 | connect timeout | a firewall or route drops the sandbox's outgoing IP | `curl -s https://ifconfig.me` shows that IP; the source's network owner must allow it. A connection does not change routing |
 | TLS error | self-signed certificate | `source_insecure: 1`, if the owner agrees |
 | 401 / 403 | no connection, wrong header, or the prefix is missing from `source_url` | check the connection and the prefix |
-| 403 from the gateway | the egress policy blocks the host | the owner adds the host to the agent's egress rules |
+| 403 from the gateway | the egress policy blocks the host (the kit allows only Trusted defaults) | the owner adds an allow rule for that one host in the agent's network settings |
 | 400 "query too long" | the range is longer than the source allows | lower `max_query_hours` |
 
 Record what you found, and what fixed it, in `work/CLAUDE.md`.
@@ -100,4 +116,4 @@ class Source:
 `window` has to be **independent** of `range`: one query over the whole window, not the
 sum of the buckets. That independence is what makes `verify.py` a real cross-check. Use only
 the standard library (`scripts/sources/http.py` has a request helper with retries). Add a
-`demo`-style offline test in `scripts/tests/`, and an example in `examples/<name>/`.
+`demo`-style offline test in `scripts/tests/`, and its section above.
