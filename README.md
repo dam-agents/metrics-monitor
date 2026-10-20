@@ -11,8 +11,6 @@ data up to date and answers questions about it in Slack.
 - **Any data source:** Prometheus (and Mimir, Thanos, VictoriaMetrics), ClickHouse, or anything a
   script can read.
 
-![The dashboard on the demo source](docs/images/dashboard-demo.png)
-
 ## Set it up
 
 This works on any DAM today:
