@@ -3,7 +3,7 @@
 
 For every metric: the value the dashboard shows for the window (computed from the snapshot's
 buckets, the same rule the page uses) against one `window` query over the same window, straight
-from the source. A metric may give `verify_query` to check against a different, independent
+from the metric's source. A metric may give `verify_query` to check against a different, independent
 measurement of the same thing (another table, another exporter); it is compared in total.
 
   scripts/verify.py [--hours 168] [--check]
@@ -20,7 +20,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from lib.mm import SNAPSHOT, cfg_all, combine, fmt_num, load_metrics, range_value, source, utc  # noqa: E402
+from lib.mm import SNAPSHOT, Sources, cfg_all, combine, fmt_num, load_metrics, range_value, utc  # noqa: E402
 
 
 def main():
@@ -29,9 +29,10 @@ def main():
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--snapshot", default=SNAPSHOT)
     a = ap.parse_args()
-    spec = load_metrics()
+    conf = cfg_all()
+    spec = load_metrics(conf=conf)
     snap = json.load(open(a.snapshot))
-    src = source(cfg_all())
+    srcs = Sources(conf)
     end = snap["meta"]["end"]
     start = max(snap["meta"]["start"], end - a.hours * 3600)
     print(f"window {utc(start)} .. {utc(end)} ({(end - start) // 3600} h)")
@@ -43,7 +44,7 @@ def main():
         if not q and m["kind"] != "sum":
             print(f"skip  {m['id']}: {m['kind']} metric with no verify_query: not cross-checked")
             continue
-        rows = src.window(q or m["query"], start, end)
+        rows = srcs.of(m).window(q or m["query"], start, end)
         vals = [r["value"] for r in rows if r["value"] is not None]
         ind = combine(vals, "sum" if m["kind"] == "sum" else m["combine"]) if vals else None
         if dash is None and ind is None:

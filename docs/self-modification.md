@@ -29,7 +29,8 @@ from Slack is `metric_deciders`, [slack.md](slack.md).)
   reads the source and writes only `work/`. It never publishes, posts or
   writes to the source.
 - **The adapter is the only place that knows the source.** `fetch.py`,
-  `verify.py`, `ask.py` and the template stay source-agnostic.
+  `verify.py`, `ask.py` and the template stay source-agnostic; they pick a
+  metric's adapter through `mm.Sources`, never by adapter name.
 - **The template and `mm.range_value` compute a range's value the same
   way**; change both together, or `verify.py` stops meaning anything.
 - `CLAUDE.md` stays slim: configuration, the hourly run, the rules, the trust

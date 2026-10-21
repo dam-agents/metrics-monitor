@@ -50,7 +50,10 @@ EOF
   (Prometheus, Mimir, Thanos, VictoriaMetrics), `clickhouse`, or `command`
   for anything else (psql, BigQuery, a REST API): see
   [`docs/sources.md`](docs/sources.md). Not ready yet: offer `demo`,
-  synthetic data, to see the whole loop first.
+  synthetic data, to see the whole loop first. Data in more than one
+  system: pick the main one as `source` and add the others with `sources`
+  ([`docs/sources.md`](docs/sources.md) → **Several sources**); each gets
+  the three steps below.
   - **Credential**: ask whether it needs one. If so, the owner adds a
     **Custom Header** connection for the source's host in this agent's
     settings (the header and value; you never see the value), and tells you
@@ -123,6 +126,7 @@ EOF
 - source_url: https://metrics.example.com/__platform_conn/conn_abc123/prometheus
 - source_headers: X-Scope-OrgID: tenant-a
 - source_label: Production metrics
+- sources: github=command
 - title: Product metrics
 - subtitle: Hourly, cross-checked
 - logo: logo.png

@@ -296,15 +296,20 @@ function chart(m, s, e) {
   return card;
 }
 
+// Source names as the page shows them. Snapshots made before `sources` existed have only source_label.
+function srcNames() { return M.sources ? Object.values(M.sources) : [M.source_label || M.source]; }
+function srcOf(m) { return (M.sources && M.sources[m.source || M.source]) || M.source_label || M.source; }
+
 function methodology() {
   const b = $('methBody'); b.replaceChildren();
   const p = (t) => b.appendChild(el('p', null, t));
-  p(`Source: ${M.source_label || M.source}. Data from ${utc(M.start)} to ${utc(M.end)}, in ${step / 60}-minute buckets, refreshed hourly. Each refresh is checked for freshness and completeness and cross-checked against independent queries before it is published; a refresh that fails a check is not published.`);
+  p(`${srcNames().length > 1 ? 'Sources' : 'Source'}: ${srcNames().join(', ')}. Data from ${utc(M.start)} to ${utc(M.end)}, in ${step / 60}-minute buckets, refreshed hourly. Each refresh is checked for freshness and completeness and cross-checked against independent queries before it is published; a refresh that fails a check is not published.`);
   p('Ranges are rolling windows ending at the last complete bucket. Totals add up the buckets in the range; averages are averages of the buckets that have data. Charts use hourly buckets up to 2 days, daily up to 90 days, weekly beyond.');
   const ul = el('ul');
   for (const m of D.metrics) {
     const li = el('li'); li.appendChild(el('strong', null, m.label + ': '));
     li.appendChild(document.createTextNode((m.description ? m.description + '. ' : '') + `${m.kind === 'sum' ? 'Total' : m.kind === 'avg' ? 'Average' : 'Latest value'}${m.by ? ', split by ' + m.by : ''}. `));
+    if (srcNames().length > 1) li.appendChild(document.createTextNode(`From ${srcOf(m)}. `));
     if (m.kpi) li.appendChild(document.createTextNode(`KPI ${m.kpi.op === '>=' ? '≥' : '≤'} ${fmt(m.kpi.target, m)}${m.kpi.per === 'day' ? ' per day' : ''}, set by ${m.kpi.set_by}. `));
     ul.appendChild(li);
   }
@@ -347,7 +352,7 @@ function showLogo() {
 showLogo();
 $('subtitle').textContent = M.subtitle || '';
 const lagH = (Date.now() / 1000 - M.end) / 3600;
-$('srcLine').textContent = `${M.source_label || M.source} · data to ${utc(M.end)}`;
+$('srcLine').textContent = `${srcNames().join(' · ')} · data to ${utc(M.end)}`;
 if (lagH > 3) $('live').classList.add('stale');
 document.querySelectorAll('#range button').forEach(bn => bn.onclick = () => { S.range = bn.dataset.r; render(); });
 render();

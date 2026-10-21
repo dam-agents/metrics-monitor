@@ -4,6 +4,28 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.6.0
+
+- One instance can read more than one source. `source` stays the default;
+  the new optional key `sources` adds named ones (`github=command`), each
+  with its own keys prefixed by its name (`github_source_url`,
+  `github_source_label`). A named source never inherits the default's URL
+  or headers.
+- A metric reads another source with `"source": "<name>"` in
+  `work/metrics.json`. `fetch.py`, `verify.py` and `ask.py` use each
+  metric's own source, so every check and cross-check still covers every
+  metric. A metric naming a source that `work/CONFIG.md` doesn't have fails
+  the refresh.
+- `ask.py raw` takes `--source <name>`; `verify-onboarding.sh` checks every
+  source's adapter and URL, and `--live` probes each one.
+- The page names every source in its header, and with more than one, says
+  in **How it is measured** which source each metric comes from.
+
+**Upgrade:** none. An instance with one source works as before, and its
+snapshot keeps its history. To add a source, the owner adds `- sources: ...`
+to `work/CONFIG.md` in the direct session ([`docs/sources.md`](docs/sources.md)
+→ **Several sources**).
+
 ## 0.5.0
 
 - New optional key `metric_deciders`: who in `slack_channel` may decide a

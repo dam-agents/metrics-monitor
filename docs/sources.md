@@ -2,7 +2,8 @@
 
 The kit doesn't depend on any one data source. `source` in `work/CONFIG.md` names an adapter,
 `scripts/sources/<source>.py`, and every script (fetch, verify, ask) talks to the source only
-through it. Read this when you connect a source, or meet one that no adapter covers.
+through it. An instance can read more than one source ([Several sources](#several-sources)).
+Read this when you connect a source, or meet one that no adapter covers.
 
 ## The adapters
 
@@ -55,6 +56,36 @@ Each module's docstring lists its `work/CONFIG.md` keys and placeholders.
   ```
 
   with the metric's `query` set to `python3 "$MM_WORK/sources/signups.py"`.
+
+## Several sources
+
+One dashboard can show metrics from more than one source, for example test results in
+ClickHouse and commit history on GitHub. `source` stays the default; `sources` in
+`work/CONFIG.md` adds named ones, `name=adapter`, separated by commas:
+
+```markdown
+- source: clickhouse
+- source_url: https://ch.example.com/__platform_conn/conn_abc123
+- source_label: Test results (ClickHouse)
+- sources: github=command
+- github_source_label: GitHub (torch-spyre)
+- github_command_timeout: 900
+```
+
+- A metric reads the default source unless it names another one: `"source": "github"` in
+  `work/metrics.json` ([metrics.md](metrics.md)). The name must be in `work/CONFIG.md`.
+- A named source reads the same keys as the default, each prefixed with its name:
+  `github_source_url`, `github_source_headers`, `github_source_label`. It never falls back to
+  the default's, so a URL or header meant for one host cannot reach another.
+- The cross-check runs against each metric's own source, and every check in
+  `check_snapshot.py` and `verify.py` covers every metric, whatever its source.
+- `ask.py raw '<query>' --source github` sends a query to one source.
+- The page names every source, and with more than one, says in the methodology which source each
+  metric comes from.
+- Moving a metric to another source re-pulls its whole history, as a changed query does.
+- A source is added only by the owner, in the direct session, because only they change
+  `work/CONFIG.md`. Each one needs its own egress rule and, if it needs a credential, its own
+  connection (below). Record what it is and why in `work/CLAUDE.md`.
 
 ## Credentials
 

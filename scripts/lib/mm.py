@@ -5,6 +5,7 @@ Paths: the definition is this repository (normally $HOME); runtime state is $MM_
 $HOME/work. Tests point MM_WORK at a temporary directory.
 """
 
+import hashlib
 import importlib
 import json
 import math
@@ -50,8 +51,9 @@ def cfg_all():
     return out
 
 
-def load_metrics(path=None):
-    """work/metrics.json with defaults applied. Raises ValueError with every problem found."""
+def load_metrics(path=None, conf=None):
+    """work/metrics.json with defaults applied. Raises ValueError with every problem found. With
+    `conf` (work/CONFIG.md), a metric's `source` must also name a source the owner configured."""
     path = path or METRICS
     with open(path) as f:
         spec = json.load(f)
@@ -87,6 +89,11 @@ def load_metrics(path=None):
             errs.append(f"{where} ({mid}): combine must be one of {COMBINE}")
         m.setdefault("by", None)
         m.setdefault("tolerance_pct", 1.0)
+        src = m.setdefault("source", None)
+        if src is not None and (not isinstance(src, str) or not re.match(r"^[a-z0-9_]+$", src)):
+            errs.append(f"{where} ({mid}): source must be a source name from work/CONFIG.md")
+        elif src is not None and conf is not None and src not in source_names(conf):
+            errs.append(f"{where} ({mid}): source `{src}` is not in work/CONFIG.md (`source` or `sources`)")
         kpi = m.get("kpi")
         if kpi is not None:
             if kpi.get("op") not in (">=", "<="):
@@ -123,20 +130,92 @@ def load_metrics(path=None):
     return spec
 
 
-def source(conf=None):
-    """The adapter named by `source` in CONFIG.md (scripts/sources/<name>.py, class Source)."""
+def source_names(conf=None):
+    """Every source this instance may read, name -> adapter. The default is named after its adapter
+    (`source: clickhouse` -> "clickhouse"); `sources` adds named ones: `github=command, ops=prometheus`.
+    Both keys live in work/CONFIG.md, so only the owner adds a source."""
     conf = conf if conf is not None else cfg_all()
-    kind = conf.get("source")
-    if not kind or not re.match(r"^[a-z0-9_]+$", kind):
+    out = {}
+    if conf.get("source"):
+        out[conf["source"]] = conf["source"]
+    for part in (conf.get("sources") or "").split(","):
+        if not part.strip():
+            continue
+        name, _, kind = part.partition("=")
+        name, kind = name.strip(), (kind.strip() or name.strip())
+        if not re.match(r"^[a-z0-9]+$", name) or not re.match(r"^[a-z0-9_]+$", kind):
+            raise SystemExit(f"work/CONFIG.md: `sources` entry '{part.strip()}' must be name=adapter, "
+                             "the name lowercase letters and digits")
+        if name in out:
+            raise SystemExit(f"work/CONFIG.md: source name `{name}` is used twice")
+        out[name] = kind
+    return out
+
+
+# The keys an adapter reads. A named source never inherits the default's: a URL or a header meant for
+# one host must not reach another.
+SOURCE_KEYS = ("source_url", "source_headers", "source_database", "source_insecure", "max_query_hours",
+               "command_timeout", "source_label")
+
+
+def source_conf(conf, name):
+    """The CONFIG.md keys source `name` reads. The default source reads them as they are; a named one
+    reads its own `<name>_<key>` (`github_source_url` is the github source's `source_url`)."""
+    if name == conf.get("source"):
+        return conf
+    p = name + "_"
+    base = {k: v for k, v in conf.items() if k not in SOURCE_KEYS}
+    return {**base, **{k[len(p):]: v for k, v in conf.items() if k.startswith(p) and k[len(p):] in SOURCE_KEYS}}
+
+
+def source_label(conf, name=None):
+    name = name or conf.get("source")
+    return source_conf(conf, name).get("source_label") or name
+
+
+def source(conf=None, name=None):
+    """The adapter for source `name` (default: `source` in CONFIG.md): scripts/sources/<adapter>.py,
+    class Source, built from source_conf(conf, name)."""
+    conf = conf if conf is not None else cfg_all()
+    if not conf.get("source") or not re.match(r"^[a-z0-9_]+$", conf["source"]):
         raise SystemExit("work/CONFIG.md has no valid `source` key (prometheus, clickhouse, command)")
+    names = source_names(conf)
+    name = name or conf["source"]
+    if name not in names:
+        raise SystemExit(f"no source `{name}`: work/CONFIG.md names {', '.join(sorted(names))} "
+                         "(the owner adds one with `sources`, docs/sources.md)")
+    kind = names[name]
     scripts = os.path.join(DEF, "scripts")
     if scripts not in sys.path:
         sys.path.insert(0, scripts)
     try:
         mod = importlib.import_module(f"sources.{kind}")
     except ModuleNotFoundError:
-        raise SystemExit(f"no adapter scripts/sources/{kind}.py for source `{kind}`")
-    return mod.Source(conf)
+        raise SystemExit(f"no adapter scripts/sources/{kind}.py for source `{name}`")
+    return mod.Source(source_conf(conf, name))
+
+
+class Sources:
+    """One adapter per source name, built on first use: `Sources(conf).of(metric)`."""
+
+    def __init__(self, conf):
+        self.conf, self._made = conf, {}
+
+    def get(self, name=None):
+        name = name or self.conf.get("source")
+        if name not in self._made:
+            self._made[name] = source(self.conf, name)
+        return self._made[name]
+
+    def of(self, metric):
+        return self.get(metric.get("source"))
+
+
+def query_hash(metric):
+    """Keys a metric's history in the snapshot: a new query or a new source re-pulls it. A metric on
+    the default source hashes its query alone, so snapshots made before `source` existed still match."""
+    q = metric["query"] if not metric.get("source") else metric["source"] + "\0" + metric["query"]
+    return hashlib.sha256(q.encode()).hexdigest()[:16]
 
 
 def parse_dur(s):

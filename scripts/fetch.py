@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pull every metric in work/metrics.json from the source into work/data/snapshot.json.
+"""Pull every metric in work/metrics.json from its source into work/data/snapshot.json.
 
 Incremental: with a previous snapshot, only the last `refetch_hours` (late data, counters that
 settle) and anything newer are pulled again; older buckets are kept as they are. Without one, the
@@ -10,14 +10,13 @@ whole `history_days` is pulled. The snapshot ends at the last complete bucket.
 """
 
 import argparse
-import hashlib
 import json
 import os
 import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from lib.mm import SNAPSHOT, cfg_all, last_bucket_end, load_metrics, source, utc  # noqa: E402
+from lib.mm import SNAPSHOT, Sources, cfg_all, last_bucket_end, load_metrics, query_hash, source_label, source_names, utc  # noqa: E402
 
 
 def series_key(metric, labels, n):
@@ -39,13 +38,13 @@ def main():
 
     conf = cfg_all()
     try:
-        spec = load_metrics()
+        spec = load_metrics(conf=conf)
     except (ValueError, OSError) as e:
         raise SystemExit(f"work/metrics.json: {e}")
     if a.check_metrics:
         print(f"ok: {len(spec['metrics'])} metrics, {len(spec['derived'])} derived")
         return
-    src = source(conf)
+    srcs = Sources(conf)
     step = spec["step"]
     end = last_bucket_end(step)
     prev = None
@@ -66,7 +65,7 @@ def main():
     qhash = {}
     t0 = time.time()
     for m in spec["metrics"]:
-        qhash[m["id"]] = hashlib.sha256(m["query"].encode()).hexdigest()[:16]
+        qhash[m["id"]] = query_hash(m)
         m_from = from_t
         if prev and (prev["meta"].get("queries") or {}).get(m["id"]) != qhash[m["id"]]:
             print(f"{m['id']}: new metric or changed query: full history")
@@ -77,7 +76,7 @@ def main():
         for pts in ids.values():
             for t in [t for t in pts if t >= m_from]:
                 del pts[t]
-        rows = src.range(m["query"], m_from, end, step) if m_from < end else []
+        rows = srcs.of(m).range(m["query"], m_from, end, step) if m_from < end else []
         for s in rows:
             key = series_key(m, s["labels"], len(rows))
             pts = ids.setdefault(key, {})
@@ -93,7 +92,8 @@ def main():
         "meta": {
             "title": conf.get("title") or "Metrics",
             "source": conf.get("source"),
-            "source_label": conf.get("source_label") or conf.get("source"),
+            "source_label": source_label(conf),
+            "sources": {n: source_label(conf, n) for n in source_names(conf)},
             "step": step,
             "start": first,
             "end": end,
@@ -104,7 +104,7 @@ def main():
             "queries": qhash,
         },
         "metrics": [{k: m.get(k) for k in ("id", "label", "unit", "kind", "combine", "by", "description", "kpi",
-                                             "decimals", "group") if m.get(k) is not None} for m in spec["metrics"]],
+                                             "decimals", "group", "source") if m.get(k) is not None} for m in spec["metrics"]],
         "series": out_series,
     }
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)

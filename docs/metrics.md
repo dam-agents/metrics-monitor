@@ -44,7 +44,9 @@ requirements log. `python3 "$HOME/scripts/fetch.py" --check-metrics` checks it.
 - `by`: the label that splits the query's series (team, region, plan). Leave it out when the
   query returns one series. Several series without `by` is an error, so nothing is summed by
   accident. The page colours the top 5 series and folds the rest into "Other".
-- `query`: in the source's language ([sources.md](sources.md)).
+- `source`: optional. The name of another source in `work/CONFIG.md` (`sources`) to read this
+  metric from. Leave it out for the default `source` ([sources.md](sources.md) → **Several sources**).
+- `query`: in the language of the metric's source ([sources.md](sources.md)).
 - `verify_query`: an independent query for the cross-check. Without it, a `sum` metric is checked
   with its own query over the whole window. An `avg` or `last` metric without one is not checked,
   and `verify.py` says so. Leave it out when no independent query gives the same number (a mean of
