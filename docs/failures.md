@@ -60,16 +60,32 @@ single step, and publish only if it exits 0.
   "$HOME/work/dist/dashboard.html"` and read its errors; a new metric with an
   unexpected shape (no data at all, a label with no value) is the usual cause.
 
-## 4. Report once
+## 4. Report only what needs the owner
 
-DM `report_to` with `send_channel_message` (`channel: slack`, `chatId: <report_to>`),
-never a channel post, starting with `slack_header` when set:
+The owner hears about a failure only when they have something to do or know.
+Everything else stays in `work/logs/refresh.log`.
+
+- **You fixed it** and the re-run passed and published: post nothing. Add a
+  `fixed: <what>` note to the log line.
+- **A cause outside you that should clear on its own** (the source briefly
+  unavailable, an upstream answering partly, ingestion behind): post nothing.
+  Log `waiting: <cause>` and let the next hourly runs try again. Report it
+  only when **3 hourly runs in a row** have failed (count the trailing
+  `FAILED` lines in `work/logs/refresh.log`), because the live dashboard is
+  then hours behind.
+- **Anything only the owner can fix** (history that shrank, a check that
+  looks wrong, a metric whose meaning changed, a credential or connection
+  that stopped working): report on the first failure.
+
+A report is one DM to `report_to` with `send_channel_message` (`channel: slack`,
+`chatId: <report_to>`), never a channel post, starting with `slack_header` when set:
 
 - what failed (step, the check's own line),
-- what you did about it (fixed and re-ran, or why you could not),
+- what you did about it, and why you could not fix it,
+- what the owner needs to do, or that nothing is needed and you will keep trying,
 - what is live now (the version and the data's end time).
 
-A failure you already reported as not fixable, with the same cause, is not
-reported again or retried until something changes; the log line says
-`known: <cause>`. When it clears, one short DM says so. On success, post
-nothing.
+A failure you already reported, with the same cause, is not reported again or
+retried until something changes; the log line says `known: <cause>`. When a
+reported failure clears, one short DM says so. A failure that was never
+reported clears silently. On success, post nothing.

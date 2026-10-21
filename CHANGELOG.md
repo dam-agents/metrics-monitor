@@ -4,6 +4,16 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.7.1
+
+- A failed hourly refresh DMs `report_to` only when the owner has something
+  to do or know: a cause only they can fix (reported on the first failure),
+  or 3 hourly runs in a row failed. A failure the agent fixes itself, or an
+  upstream cause that clears within 3 runs, posts nothing and is logged in
+  `work/logs/refresh.log`. Before, every failed run sent a DM.
+
+**Upgrade:** nothing to change. Tell the owner they will get fewer failure DMs.
+
 ## 0.7.0
 
 - Anyone in `slack_channel` who asks the agent can change the dashboard:

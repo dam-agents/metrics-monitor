@@ -113,8 +113,9 @@ EOF
   measures, targets, layout, title, logo), so the people in it are the people
   who can change it. Not connected: skip
   it, and say a channel can be bound in the agent's settings later.
-- **Failures**: who gets a DM when an hourly refresh fails and cannot be
-  fixed. Look the person up with `describe_channel_users` and record their
+- **Failures**: who gets a DM when an hourly refresh fails and needs them:
+  a cause only the owner can fix, or 3 failed runs in a row. Failures the
+  agent fixes, or that clear on their own, are not reported. Look the person up with `describe_channel_users` and record their
   user id as `report_to`. No Slack: failures are only in the run's session.
 
 ## 3. Write it down

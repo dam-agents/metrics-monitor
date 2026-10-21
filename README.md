@@ -79,7 +79,8 @@ checkout stops and the agent tells you which one.
 | Browser | the page shows errors or NaN, or has no charts |
 
 When a run fails, the agent works out why. It may fix its own tooling but never loosens a check.
-It reports by Slack DM to one person you choose. Successful runs post nothing.
+It DMs one person you choose only when they need to act, or when 3 hourly runs in a row have
+failed. A failure it fixes itself, or one that clears on its own, posts nothing. Neither do successful runs.
 
 ## Develop
 
