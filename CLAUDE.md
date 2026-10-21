@@ -44,7 +44,8 @@ Written during onboarding; a key is a `- key: value` bullet, read by
 - `visibility`: `private`, `public` or `restricted`: what the owner chose
   ([`docs/publish.md`](docs/publish.md)).
 - `artifact_id`: the dashboard artifact, written after the first publish.
-- `report_to`: the Slack user id that failed hourly runs are reported to by DM.
+- `report_to`: the Slack user id that hourly failures needing the owner are
+  reported to by DM ([`docs/failures.md`](docs/failures.md) → **4**).
   Missing: failures go to the direct session only, as the run's last message.
 - `slack_channel`: the chat id where people ask questions. Missing: Slack asks nothing.
 - `slack_header`: optional first line of every Slack message, e.g.
@@ -70,10 +71,10 @@ session) runs this. In the direct session, run the same steps when asked.
    `work/logs/refresh.log`, and post nothing anywhere.
 3. **Failed:** follow [`docs/failures.md`](docs/failures.md): diagnose, fix
    tooling or exclude a known kind of artefact series if you can, re-run the
-   whole refresh, and only then publish. Whatever the outcome, DM `report_to`
-   once: what failed, what you did, what is live now. A failure you already
-   reported as not fixable is not reported or retried again until something
-   changes.
+   whole refresh, and only then publish. DM `report_to` only when the owner
+   has something to do or know: a cause only they can fix, or 3 hourly runs
+   failed in a row. A failure you fixed, or one that clears on its own within
+   3 runs, posts nothing ([`docs/failures.md`](docs/failures.md) → **4**).
 
 ## Answering questions
 
