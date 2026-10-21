@@ -4,6 +4,22 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.7.0
+
+- Anyone in `slack_channel` who asks the agent can change the dashboard:
+  what it measures, hand-set figures (with `set_by`), the layout, and the
+  `title`, `subtitle`, `logo` and `logo_dark`. Being in the channel is the
+  permission, and the owner controls who is in it. Before, only the owner
+  could, unless they listed approvers by Slack user id in `metric_deciders`.
+- `metric_deciders` is removed. Onboarding no longer asks for it.
+- Unchanged: a Slack message still cannot change the data source, any other
+  `work/CONFIG.md` key, sharing, the schedule, the definition or a check, and
+  every change still goes live only through a refresh that passes.
+
+**Upgrade:** remove the `- metric_deciders: ...` line from `work/CONFIG.md`,
+if it is there (`verify-onboarding.sh --config` now fails on it as an unknown
+key). Tell the owner that anyone in the channel can now change the dashboard.
+
 ## 0.6.1
 
 - A target, a rate or another hand-set figure asked for in Slack follows the

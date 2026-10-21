@@ -26,7 +26,7 @@ DEF="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="${MM_WORK:-$HOME/work}"
 export MM_WORK="$WORK"
 CONFIG="$WORK/CONFIG.md"
-KNOWN="source sources source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle logo logo_dark visibility artifact_id report_to slack_channel metric_deciders slack_header timezone"
+KNOWN="source sources source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle logo logo_dark visibility artifact_id report_to slack_channel slack_header timezone"
 REQUIRED="source title visibility"
 
 CHECKS=0; FAILS=0; WARNS=0
@@ -82,12 +82,6 @@ else
     if printf '%s' "$v" | grep -qE '^[CGDUW][A-Z0-9]{6,}$'; then ok "config.$k" "$v"
     else fail "config.$k" "'$v' is not a Slack id" "use the id describe_channel / describe_channel_users gives, e.g. C0123ABCD or U0123ABCD: $CFG_FIX"; fi
   done
-  md="$(cfg metric_deciders)"
-  if [ -n "$md" ]; then
-    if [ -z "$(cfg slack_channel)" ]; then fail config.metric_deciders "set without slack_channel" "add slack_channel or remove metric_deciders: $CFG_FIX"
-    elif [ "$md" = channel ] || printf '%s' "$md" | grep -qE '^[UW][A-Z0-9]{6,}([[:space:]]*,[[:space:]]*[UW][A-Z0-9]{6,})*$'; then ok config.metric_deciders "$md"
-    else fail config.metric_deciders "'$md'" "\`channel\` or Slack user ids separated by commas: $CFG_FIX"; fi
-  fi
   for k in logo logo_dark; do
     v="$(cfg "$k")"; [ -z "$v" ] && continue
     if out="$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import build; build.logo_uri(sys.argv[2]); print("ok")' "$DEF/scripts" "$v" 2>&1)"; then ok "config.$k" "$v"
