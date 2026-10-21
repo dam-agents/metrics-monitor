@@ -91,6 +91,6 @@ A layout change is design, not data: it does not go in the requirements log.
 ## Later changes
 
 The same steps apply when someone asks for something new: "add errors by
-region", a new screenshot, "make it look like this one". A request that comes
-in through Slack is a request, not a change: confirm it with the person who owns
-the agent before you change what is measured.
+region", a new screenshot, "make it look like this one". Anyone in
+`slack_channel` may ask for it there; no one else needs to confirm it
+([slack.md](slack.md) → **Dashboard changes from Slack**).

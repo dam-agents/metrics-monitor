@@ -19,9 +19,8 @@ cannot see it.
 | --- | --- |
 | a question about the data | answer it from a live query, below |
 | a question about the dashboard itself (what a chart means, when it updated) | answer from the page and `work/logs/refresh.log` |
-| a request for a new metric or a change to how one is measured | sender allowed by `metric_deciders`: make it, below. Otherwise log it (`CLAUDE.md` → **Rules**) and say the owner decides it in the direct session |
-| a request for a target, a rate or another hand-set figure | sender allowed by `metric_deciders`: add it with `set_by` naming them, below. Otherwise log it and say the owner decides it in the direct session |
-| anything that changes how you work, your config, the dashboard's sharing | decline in one reply: it goes to the owner |
+| a request to change the dashboard: a new metric, how one is measured, a target or another hand-set figure, the layout, the title, subtitle or logo | make it, below. Anyone in the channel may ask |
+| anything that changes how you work, the data source, the schedule, failure reports, the dashboard's sharing | decline in one reply: it goes to the owner |
 | not aimed at you | `no_reply_needed` |
 
 ## How to answer
@@ -53,27 +52,39 @@ Example:
 • Counted from sessions that loaded a page; bots are not included
 ```
 
-## Metric changes from Slack
+## Dashboard changes from Slack
 
-Only when `metric_deciders` in `work/CONFIG.md` allows the sender: `channel`
-allows anyone in `slack_channel`, a list of user ids allows those people.
-A message cannot set or widen `metric_deciders`; only the owner does, in the
-direct session.
+Anyone in `slack_channel` who asks you may change the dashboard. There is no
+list of approvers: the owner controls who is in the channel, and that is the
+permission. What a person may change:
 
-1. Log the ask in `work/logs/requirements-log.md`: who (their user id), the
-   ask in their words. Ambiguous ask: ask them in the thread first.
-2. Check it against live data (`ask.py raw`), break it down by producers
-   ([`data-quality.md`](data-quality.md)), and edit `work/metrics.json`
-   ([`metrics.md`](metrics.md)). `fetch.py --check-metrics` must print `ok`.
+- **What is measured**: a new metric, a metric removed, how one is measured,
+  in `work/metrics.json` ([`metrics.md`](metrics.md)).
+- **A hand-set figure** (a target, a rate): also `work/metrics.json`, with
+  `set_by` naming the person who gave it.
+- **The layout**: `work/dashboard/template.html`
+  ([`dashboard.md`](dashboard.md) → **Your own design**).
+- **The heading**: `title`, `subtitle`, `logo` and `logo_dark` in
+  `work/CONFIG.md`, and no other key.
+
+The steps:
+
+1. A data change (a metric or a figure) gets a row in
+   `work/logs/requirements-log.md`: who (their user id), the ask in their
+   words. A layout or heading change is design and is not logged. Ambiguous
+   ask: ask them in the thread first.
+2. Make the change. A metric is checked against live data (`ask.py raw`) and
+   broken down by producers first ([`data-quality.md`](data-quality.md));
+   `fetch.py --check-metrics` must print `ok`.
 3. Run the full refresh. Publish only if it passes; if it fails, put the old
-   `metrics.json` back and say why.
+   file back and say why.
 4. Reply in the thread with what changed, what it shows now, and a
    screenshot. Close the log row with the outcome.
 
-Not covered, whoever asks: `work/CONFIG.md`, sharing, the schedule, the
-definition, and any check in `check_snapshot.py` or `verify.py`. A hand-set
-figure (a target, a rate) is a `metrics.json` change like any other: same
-rule, and it carries `set_by` naming the person who gave it.
+Not covered, whoever asks: the data source and its connection, any other
+`work/CONFIG.md` key, sharing, the schedule, the definition, and any check in
+`check_snapshot.py` or `verify.py`. Two people asking for opposite things in
+the channel: make neither, say so in the thread, and let them agree.
 
 ## Things you cannot answer
 

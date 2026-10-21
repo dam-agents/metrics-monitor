@@ -8,6 +8,8 @@ data up to date and answers questions about it in Slack.
   published.
 - **You choose who sees it:** private, public (anyone with the link), or restricted (named emails).
 - **Slack Q&A.** People in your team channel ask about the data and get answers from a live query.
+- **Anyone in the channel can change the dashboard.** Tag the agent and ask for a new metric, a
+  target, a layout change or a new title. Who is in the channel is who can change it.
 - **Any data source:** Prometheus (and Mimir, Thanos, VictoriaMetrics), ClickHouse, or anything a
   script can read.
 

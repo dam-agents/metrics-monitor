@@ -108,10 +108,10 @@ EOF
   that channel can ask about the data and gets an answer from a live query;
   with ambient mode on (the owner turns it on in the channel binding) you
   read along and answer only when clearly asked ([`docs/slack.md`](docs/slack.md)).
-  Offer a header line for every message (`slack_header`). Ask who may
-  decide metric changes from the channel (`metric_deciders`): nobody but the
-  owner (default, leave it out), `channel` for anyone in it, or named people
-  (look them up with `describe_channel_users`, record their user ids). Not connected: skip
+  Offer a header line for every message (`slack_header`). Tell them that
+  anyone in the channel can also ask you to change the dashboard (what it
+  measures, targets, layout, title, logo), so the people in it are the people
+  who can change it. Not connected: skip
   it, and say a channel can be bound in the agent's settings later.
 - **Failures**: who gets a DM when an hourly refresh fails and cannot be
   fixed. Look the person up with `describe_channel_users` and record their
@@ -133,7 +133,6 @@ EOF
 - visibility: private
 - report_to: U0123ABCD
 - slack_channel: C0123ABCD
-- metric_deciders: channel
 - slack_header: *:bar_chart: Product metrics*
 - timezone: America/New_York
 ```
