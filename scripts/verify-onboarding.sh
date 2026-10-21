@@ -26,7 +26,7 @@ DEF="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="${MM_WORK:-$HOME/work}"
 export MM_WORK="$WORK"
 CONFIG="$WORK/CONFIG.md"
-KNOWN="source source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle logo logo_dark visibility artifact_id report_to slack_channel metric_deciders slack_header timezone"
+KNOWN="source sources source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle logo logo_dark visibility artifact_id report_to slack_channel metric_deciders slack_header timezone"
 REQUIRED="source title visibility"
 
 CHECKS=0; FAILS=0; WARNS=0
@@ -37,6 +37,13 @@ warn() { WARNS=$((WARNS + 1)); printf 'warn %s: %s\n' "$1" "$2"; }
 # cfg <key>: through the pipeline's own reader
 cfg() { python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); from lib.mm import cfg_all; print(cfg_all().get(sys.argv[2], ""))' "$DEF/scripts" "$1"; }
 
+# names <name>=<adapter>, one per line: the default `source` and every `sources` entry
+names() { python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); from lib.mm import source_names
+for n, k in source_names().items(): print(f"{n}={k}")' "$DEF/scripts" 2>&1; }
+# scfg <name> <key>: a key as that source reads it (`<name>_<key>` overrides `<key>`)
+scfg() { python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); from lib.mm import cfg_all, source_conf
+print(source_conf(cfg_all(), sys.argv[2]).get(sys.argv[3], ""))' "$DEF/scripts" "$1" "$2"; }
+
 CFG_FIX="ONBOARDING.md → 3. Write it down"
 if [ ! -f "$CONFIG" ]; then
   fail config "work/CONFIG.md is missing" "write it: $CFG_FIX"
@@ -45,17 +52,21 @@ else
     v="$(cfg "$k")"
     if [ -n "$v" ]; then ok "config.$k" "$v"; else fail "config.$k" "missing" "add \`- $k: <value>\`: $CFG_FIX"; fi
   done
-  src="$(cfg source)"
-  if [ -n "$src" ]; then
-    if [ -f "$DEF/scripts/sources/$src.py" ]; then ok config.source "adapter scripts/sources/$src.py"
-    else fail config.source "no adapter for '$src'" "use prometheus, clickhouse, command or demo: docs/sources.md"; fi
-    case "$src" in
-      prometheus|clickhouse)
-        u="$(cfg source_url)"
-        if [ -z "$u" ]; then fail config.source_url "missing for $src" "add \`- source_url: https://...\`: docs/sources.md"
-        elif printf '%s' "$u" | grep -qE '^https?://[^/[:space:]]+'; then ok config.source_url "$u"
-        else fail config.source_url "'$u' is not an http(s) URL" "docs/sources.md"; fi ;;
-    esac
+  all=""
+  if [ -n "$(cfg source)" ]; then
+    if ! all="$(names)"; then fail config.sources "${all##*: }" "docs/sources.md → Several sources"; all=""; fi
+    for nk in $all; do
+      n="${nk%%=*}"; src="${nk#*=}"; at="config.source"; [ "$n" = "$(cfg source)" ] || at="config.sources.$n"
+      if [ -f "$DEF/scripts/sources/$src.py" ]; then ok "$at" "adapter scripts/sources/$src.py"
+      else fail "$at" "no adapter for '$src'" "use prometheus, clickhouse, command or demo: docs/sources.md"; fi
+      case "$src" in
+        prometheus|clickhouse)
+          u="$(scfg "$n" source_url)"; k="source_url"; [ "$at" = config.source ] || k="${n}_source_url"
+          if [ -z "$u" ]; then fail "config.$k" "missing for $src" "add \`- $k: https://...\`: docs/sources.md"
+          elif printf '%s' "$u" | grep -qE '^https?://[^/[:space:]]+'; then ok "config.$k" "$u"
+          else fail "config.$k" "'$u' is not an http(s) URL" "docs/sources.md"; fi ;;
+      esac
+    done
   fi
   # A credential in CONFIG.md is the one mistake that cannot be undone by editing it back.
   if grep -qiE '(authorization|api[-_]?key|password|secret|token|x-clickhouse-key)[[:space:]]*:' "$CONFIG"; then
@@ -83,7 +94,11 @@ else
     else fail "config.$k" "$out" "save the image in work/ and name it here: $CFG_FIX"; fi
   done
   unknown="$(grep -oE '^[-*][[:space:]]*[A-Za-z0-9_]+[[:space:]]*:' "$CONFIG" | sed -E 's/^[-*][[:space:]]*//; s/[[:space:]]*:$//' |
-    tr '[:upper:]' '[:lower:]' | sort -u | while read -r k; do case " $KNOWN " in *" $k "*) ;; *) printf '%s ' "$k" ;; esac; done)"
+    tr '[:upper:]' '[:lower:]' | sort -u | while read -r k; do
+      case " $KNOWN " in *" $k "*) continue ;; esac
+      # `<name>_<key>`: a key of a source named in `sources`
+      for nk in $all; do n="${nk%%=*}"; case " $KNOWN " in *" ${k#"${n}_"} "*) [ "${k#"${n}_"}" != "$k" ] && continue 2 ;; esac; done
+      printf '%s ' "$k"; done)"
   if [ -n "$unknown" ]; then fail config.keys "unknown: $unknown" "remove them, nothing reads them: $CFG_FIX"
   else ok config.keys "only known keys"; fi
 fi
@@ -112,16 +127,18 @@ fi
 
 if [ "$LIVE" = 1 ]; then
   if out="$(python3 "$DEF/scripts/ask.py" list 2>&1)"; then ok ask "metrics listed"; else fail ask "$out" "docs/sources.md"; fi
-  src="$(cfg source)"
-  case "$src" in
-    prometheus) probe='vector(1)' ;;
-    clickhouse) probe='SELECT 1 AS value' ;;
-    *) probe='' ;;
-  esac
-  if [ -n "$probe" ]; then
-    if python3 "$DEF/scripts/ask.py" raw "$probe" >/dev/null 2>&1; then ok source "answers"
-    else fail source "does not answer" "docs/sources.md → When the source does not answer"; fi
-  fi
+  for nk in $(names 2>/dev/null); do
+    n="${nk%%=*}"
+    case "${nk#*=}" in
+      prometheus) probe='vector(1)' ;;
+      clickhouse) probe='SELECT 1 AS value' ;;
+      *) probe='' ;;
+    esac
+    if [ -n "$probe" ]; then
+      if python3 "$DEF/scripts/ask.py" raw "$probe" --source "$n" >/dev/null 2>&1; then ok "source.$n" "answers"
+      else fail "source.$n" "does not answer" "docs/sources.md → When the source does not answer"; fi
+    fi
+  done
   last="$(tail -1 "$WORK/logs/refresh.log" 2>/dev/null)"
   case "$last" in
     *"  ok  "*|*"Z  ok "*) ok refresh "${last%%  *}: ok" ;;

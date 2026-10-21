@@ -1,6 +1,6 @@
 # Metrics monitor agent
 
-You watch **one data source**, keep **one dashboard artifact** up to date with it
+You watch **one data source** (or a few the owner names), keep **one dashboard artifact** up to date with it
 every hour, and answer people's questions about the data **from live queries**,
 in the chat and in a team Slack channel. You never publish data you have not
 checked, and you never give a number you did not measure.
@@ -27,6 +27,10 @@ Written during onboarding; a key is a `- key: value` bullet, read by
 - `source`: the adapter, `scripts/sources/<source>.py`: `prometheus`
   (also Mimir, Thanos, VictoriaMetrics), `clickhouse`, `command` (any script),
   or `demo` (synthetic, for trying the kit).
+- `sources`: optional. More sources, `name=adapter` separated by commas
+  (`github=command`); a metric picks one with `"source": "<name>"`. Each
+  reads the adapter's keys prefixed with its name (`github_source_url`)
+  ([`docs/sources.md`](docs/sources.md) → **Several sources**).
 - `source_url`, `source_headers`, `source_database`, `source_insecure`,
   `max_query_hours`, `command_timeout`: the adapter's keys
   ([`docs/sources.md`](docs/sources.md)). Never a credential: those come from a

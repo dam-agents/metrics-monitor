@@ -57,6 +57,49 @@ class Metrics(unittest.TestCase):
                  "no metric uses")
 
 
+class SeveralSources(unittest.TestCase):
+    CONF = {"source": "clickhouse", "source_url": "https://ch", "source_label": "CH",
+            "sources": "github=command, ops = prometheus", "github_source_label": "GitHub", "github_command_timeout": "9",
+            "ops_source_url": "https://prom"}
+
+    def test_names(self):
+        self.assertEqual(mm.source_names(self.CONF), {"clickhouse": "clickhouse", "github": "command", "ops": "prometheus"})
+        self.assertEqual(mm.source_names({"source": "demo"}), {"demo": "demo"})
+        for bad in ("Git=command", "clickhouse=command", "a=b=c"):
+            with self.assertRaises(SystemExit):
+                mm.source_names({**self.CONF, "sources": bad})
+
+    def test_prefixed_keys(self):
+        gh = mm.source_conf(self.CONF, "github")
+        self.assertEqual((gh["source_label"], gh["command_timeout"]), ("GitHub", "9"))
+        self.assertNotIn("source_url", gh)  # never the default's URL or headers
+        self.assertEqual(mm.source_conf(self.CONF, "ops")["source_url"], "https://prom")
+        self.assertIs(mm.source_conf(self.CONF, "clickhouse"), self.CONF)
+        self.assertEqual((mm.source_label(self.CONF), mm.source_label(self.CONF, "ops")), ("CH", "ops"))
+
+    def test_pick_adapter(self):
+        s = mm.Sources(self.CONF)
+        self.assertEqual(s.of({"source": "github"}).name, "command")
+        self.assertEqual(s.of({"source": "github"}).timeout, 9)
+        self.assertEqual(s.of({"source": None}).name, "clickhouse")
+        with self.assertRaises(SystemExit):
+            s.get("nosuch")
+
+    def test_metric_source_checked(self):
+        m = {**BASE["metrics"][0], "source": "github"}
+        mm.load_metrics(spec_file({"metrics": [m]}))  # without CONFIG: shape only
+        mm.load_metrics(spec_file({"metrics": [m]}), conf=self.CONF)
+        with self.assertRaises(ValueError) as c:
+            mm.load_metrics(spec_file({"metrics": [{**m, "source": "jira"}]}), conf=self.CONF)
+        self.assertIn("source `jira` is not in work/CONFIG.md", str(c.exception))
+
+    def test_hash_keeps_old_snapshots(self):
+        import hashlib
+        m = {"query": "q", "source": None}
+        self.assertEqual(mm.query_hash(m), hashlib.sha256(b"q").hexdigest()[:16])
+        self.assertNotEqual(mm.query_hash(m), mm.query_hash({**m, "source": "github"}))
+
+
 class RangeValue(unittest.TestCase):
     S = [{"key": "x", "points": [[0, 1], [3600, 2], [7200, 3]]}, {"key": "y", "points": [[0, 10], [7200, 30]]}]
 

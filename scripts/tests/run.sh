@@ -38,6 +38,29 @@ printf -- "- source: nosuch\n- title: Test\n- visibility: private\n" > "$MM_WORK
 printf -- "- source: demo\n- title: Test\n- visibility: private\n" > "$MM_WORK/CONFIG.md" &&
 [ "$(sha256sum < "$MM_WORK/data/snapshot.json")" = "$before" ] && tail -1 "$MM_WORK/logs/refresh.log" | grep -q "FAILED at fetch"'
 
+name="a metric on a second source: fetched, checked and cross-checked from that source"
+t bash -c 'cp "$MM_WORK/CONFIG.md" "$MM_WORK/c.bak"; cp "$MM_WORK/metrics.json" "$MM_WORK/m.bak"
+printf -- "- sources: synth=demo\n- synth_source_label: Second source\n" >> "$MM_WORK/CONFIG.md"
+python3 - <<PY
+import json, os
+p = os.environ["MM_WORK"] + "/metrics.json"; s = json.load(open(p))
+s["metrics"][2]["source"] = "synth"; json.dump(s, open(p, "w"))
+PY
+bash scripts/refresh.sh > "$MM_WORK/out5" 2>&1 && grep -q "signups: new metric or changed query: full history" "$MM_WORK/out5" \
+  && grep -qE "^ok    signups: " "$MM_WORK/out5" && grep -q "Second source" "$MM_WORK/dist/dashboard.html" \
+  && python3 scripts/ask.py signups --since 24h | grep -q "source: Second source" \
+  && bash scripts/verify-onboarding.sh --config | grep -q "ok   config.sources.synth" || { tail -30 "$MM_WORK/out5"; false; }
+rc=$?; mv "$MM_WORK/c.bak" "$MM_WORK/CONFIG.md"; mv "$MM_WORK/m.bak" "$MM_WORK/metrics.json"; exit $rc'
+name="a metric naming a source CONFIG.md does not have fails the refresh"
+t bash -c 'cp "$MM_WORK/metrics.json" "$MM_WORK/m.bak"
+python3 - <<PY
+import json, os
+p = os.environ["MM_WORK"] + "/metrics.json"; s = json.load(open(p))
+s["metrics"][2]["source"] = "jira"; json.dump(s, open(p, "w"))
+PY
+! bash scripts/refresh.sh > "$MM_WORK/out6" 2>&1; rc=$?; mv "$MM_WORK/m.bak" "$MM_WORK/metrics.json"
+[ $rc -eq 0 ] && grep -q "source .jira. is not in work/CONFIG.md" "$MM_WORK/out6"'
+
 name="unit tests"
 t python3 scripts/tests/test_pipeline.py
 
