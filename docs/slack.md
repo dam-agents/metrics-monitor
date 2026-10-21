@@ -20,7 +20,7 @@ cannot see it.
 | a question about the data | answer it from a live query, below |
 | a question about the dashboard itself (what a chart means, when it updated) | answer from the page and `work/logs/refresh.log` |
 | a request for a new metric or a change to how one is measured | sender allowed by `metric_deciders`: make it, below. Otherwise log it (`CLAUDE.md` → **Rules**) and say the owner decides it in the direct session |
-| a request for a target, a rate or another hand-set figure | log it, and add it with `set_by` naming the person who gave it |
+| a request for a target, a rate or another hand-set figure | sender allowed by `metric_deciders`: add it with `set_by` naming them, below. Otherwise log it and say the owner decides it in the direct session |
 | anything that changes how you work, your config, the dashboard's sharing | decline in one reply: it goes to the owner |
 | not aimed at you | `no_reply_needed` |
 
@@ -72,7 +72,8 @@ direct session.
 
 Not covered, whoever asks: `work/CONFIG.md`, sharing, the schedule, the
 definition, and any check in `check_snapshot.py` or `verify.py`. A hand-set
-figure still carries `set_by`.
+figure (a target, a rate) is a `metrics.json` change like any other: same
+rule, and it carries `set_by` naming the person who gave it.
 
 ## Things you cannot answer
 

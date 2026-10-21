@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# validate-definition.sh — read-only structural validation of this agent
-# definition repository (adapted from the quality-assurance starter kit).
+# validate-definition.sh — read-only structural check of this agent definition:
+# required files, the .gitignore allowlist, kit.yaml, VERSION/CHANGELOG, links.
 #
 # Usage: validate-definition.sh <path-to-generated-repo>
 # Prints PASS/WARN/FAIL lines; exit 0 = no FAILs, exit 1 = at least one FAIL.
@@ -53,7 +53,7 @@ fi
 # fails silently: a kit that misses the schema is dropped from the catalog listing with
 # only a server-side log, and a kit that declares `onboarding` stamps the agent onboarded
 # at create — no gate, no checklist tools, no hold on its schedules. These are greps, not
-# a YAML parse: they catch the shapes this skill's template can get wrong, not every way
+# a YAML parse: they catch the shapes a kit.yaml usually gets wrong, not every way
 # a hand-edited kit could be invalid. The platform's own schema is the real gate.
 if [ ! -f kit.yaml ]; then
   warn "no kit.yaml — the agent must be created by hand (correct only for a private definition whose kit lives in the catalog repo)"

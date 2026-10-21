@@ -4,6 +4,16 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.6.1
+
+- A target, a rate or another hand-set figure asked for in Slack follows the
+  same rule as a metric change: only a sender `metric_deciders` allows can
+  add it, with `set_by` naming them. Before, `docs/slack.md` let anyone in
+  the channel add one, though it lives in `work/metrics.json`.
+- `scripts/validate-definition.sh` describes itself, not where it came from.
+
+**Upgrade:** none.
+
 ## 0.6.0
 
 - One instance can read more than one source. `source` stays the default;
