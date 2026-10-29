@@ -4,6 +4,23 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.8.0
+
+- New optional key `owner_slack_id`: the owner's Slack user id. A Slack
+  message whose sender is that id, in `slack_channel` or a DM to the bot, has
+  the same rights as the direct session: the schedule, the data source,
+  sharing, failure reports, `work/CONFIG.md` and the definition. Before, those
+  could only be changed in the direct session.
+- Only the sender id the platform gives a message counts, never a name or id
+  in its text. `owner_slack_id` itself changes only in the direct session.
+  The hard invariants still hold for the owner everywhere.
+- Onboarding offers the key; `verify-onboarding.sh --config` checks it is a
+  Slack user id.
+
+**Upgrade:** nothing to change. Tell the owner they can add
+`- owner_slack_id: <their user id>` to `work/CONFIG.md` in the direct session
+to change these things from Slack.
+
 ## 0.7.1
 
 - A failed hourly refresh DMs `report_to` only when the owner has something

@@ -87,6 +87,11 @@ t bash -c 'cp "$MM_WORK/CONFIG.md" "$MM_WORK/c.bak"; echo "- source_headers: Aut
 out="$(bash scripts/verify-onboarding.sh --config)"; rc=$?; mv "$MM_WORK/c.bak" "$MM_WORK/CONFIG.md"
 [ $rc -ne 0 ] && echo "$out" | grep -q "FAIL config.secrets"'
 
+name="verify-onboarding.sh refuses an owner_slack_id that is not a user id"
+t bash -c 'cp "$MM_WORK/CONFIG.md" "$MM_WORK/c.bak"; echo "- owner_slack_id: C0123ABCD" >> "$MM_WORK/CONFIG.md"
+out="$(bash scripts/verify-onboarding.sh --config)"; rc=$?; mv "$MM_WORK/c.bak" "$MM_WORK/CONFIG.md"
+[ $rc -ne 0 ] && echo "$out" | grep -q "FAIL config.owner_slack_id"'
+
 echo
 [ "$FAILS" -eq 0 ] && { echo "all tests passed"; exit 0; }
 echo "$FAILS test(s) failed"; exit 1

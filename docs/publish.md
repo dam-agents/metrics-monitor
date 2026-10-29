@@ -12,7 +12,7 @@ An artifact's visibility is one of three, and the owner chooses it
 | Visibility | Who opens the link | Who sets it |
 | --- | --- | --- |
 | `private` | the owner, in the app; no link | default |
-| `public` | anyone holding the link, no sign-in | you, with `set_artifact_sharing`, only when the owner asks in the direct session |
+| `public` | anyone holding the link, no sign-in | you, with `set_artifact_sharing`, only when the owner asks, in the direct session or as `owner_slack_id` |
 | `restricted` | the owner and the email addresses they list, after sign-in | **only the owner**, in the artifact's **Share** dialog |
 
 Your tools offer only private and public, and they refuse any sharing change

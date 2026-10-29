@@ -83,8 +83,8 @@ ClickHouse and commit history on GitHub. `source` stays the default; `sources` i
 - The page names every source, and with more than one, says in the methodology which source each
   metric comes from.
 - Moving a metric to another source re-pulls its whole history, as a changed query does.
-- A source is added only by the owner, in the direct session, because only they change
-  `work/CONFIG.md`. Each one needs its own egress rule and, if it needs a credential, its own
+- A source is added only by the owner, in the direct session or as `owner_slack_id` in
+  Slack, because only they change `work/CONFIG.md`. Each one needs its own egress rule and, if it needs a credential, its own
   connection (below). Record what it is and why in `work/CLAUDE.md`.
 
 ## Credentials
