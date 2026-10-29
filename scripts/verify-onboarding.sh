@@ -26,7 +26,7 @@ DEF="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="${MM_WORK:-$HOME/work}"
 export MM_WORK="$WORK"
 CONFIG="$WORK/CONFIG.md"
-KNOWN="source sources source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle logo logo_dark visibility artifact_id report_to slack_channel slack_header timezone"
+KNOWN="source sources source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle logo logo_dark visibility artifact_id report_to slack_channel slack_header owner_slack_id timezone"
 REQUIRED="source title visibility"
 
 CHECKS=0; FAILS=0; WARNS=0
@@ -82,6 +82,10 @@ else
     if printf '%s' "$v" | grep -qE '^[CGDUW][A-Z0-9]{6,}$'; then ok "config.$k" "$v"
     else fail "config.$k" "'$v' is not a Slack id" "use the id describe_channel / describe_channel_users gives, e.g. C0123ABCD or U0123ABCD: $CFG_FIX"; fi
   done
+  v="$(cfg owner_slack_id)"
+  if [ -z "$v" ]; then ok config.owner_slack_id "none"
+  elif printf '%s' "$v" | grep -qE '^[UW][A-Z0-9]{6,}$'; then ok config.owner_slack_id "$v"
+  else fail config.owner_slack_id "'$v' is not a Slack user id" "use the owner's user id from describe_channel_users, e.g. U0123ABCD: $CFG_FIX"; fi
   for k in logo logo_dark; do
     v="$(cfg "$k")"; [ -z "$v" ] && continue
     if out="$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import build; build.logo_uri(sys.argv[2]); print("ok")' "$DEF/scripts" "$v" 2>&1)"; then ok "config.$k" "$v"

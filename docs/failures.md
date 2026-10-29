@@ -35,7 +35,7 @@ You may fix, without asking:
 You may **never**: loosen, skip or work around a check; change a tolerance,
 a KPI, a rate, what a metric means, the schedule, the design or your
 permissions; or publish anything the checks did not pass. Those need the
-person in the direct session.
+owner to ask: in the direct session, or as `owner_slack_id` in Slack.
 
 After any fix, re-run the **whole** `bash "$HOME/scripts/refresh.sh"`, never a
 single step, and publish only if it exits 0.

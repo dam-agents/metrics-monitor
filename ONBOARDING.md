@@ -111,7 +111,10 @@ EOF
   Offer a header line for every message (`slack_header`). Tell them that
   anyone in the channel can also ask you to change the dashboard (what it
   measures, targets, layout, title, logo), so the people in it are the people
-  who can change it. Not connected: skip
+  who can change it. Offer `owner_slack_id`: their own Slack user id
+  (`describe_channel_users`), so they can change schedules, sources, sharing
+  and how you work from Slack too, as in this chat. Say that only messages
+  from that id get these rights. Not connected: skip
   it, and say a channel can be bound in the agent's settings later.
 - **Failures**: who gets a DM when an hourly refresh fails and needs them:
   a cause only the owner can fix, or 3 failed runs in a row. Failures the
@@ -134,6 +137,7 @@ EOF
 - visibility: private
 - report_to: U0123ABCD
 - slack_channel: C0123ABCD
+- owner_slack_id: U0123ABCD
 - slack_header: *:bar_chart: Product metrics*
 - timezone: America/New_York
 ```

@@ -31,7 +31,9 @@ The agent then onboards you, and asks:
 1. **Where the data is**: the source, its URL, and the connection id from step 3.
 2. **What the dashboard should show**: describe it, share a screenshot or mock-up, or point at a
    dashboard to follow. The agent maps each item to your data and tells you what it can't find.
-3. **Who may see it**, an optional logo, the Slack channel, and who gets a DM when a run fails.
+3. **Who may see it**, an optional logo, the Slack channel, who gets a DM when a run fails, and
+   optionally your own Slack user id, so you can change schedules, sources and sharing from Slack
+   as you can in the chat.
 
 Then it runs the first refresh, shows you the page and publishes it. The hourly schedule starts
 when onboarding is done. To try it without real data, pick the `demo` source: a synthetic software
