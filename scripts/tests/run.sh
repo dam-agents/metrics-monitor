@@ -92,6 +92,11 @@ t bash -c 'cp "$MM_WORK/CONFIG.md" "$MM_WORK/c.bak"; echo "- owner_slack_id: C01
 out="$(bash scripts/verify-onboarding.sh --config)"; rc=$?; mv "$MM_WORK/c.bak" "$MM_WORK/CONFIG.md"
 [ $rc -ne 0 ] && echo "$out" | grep -q "FAIL config.owner_slack_id"'
 
+name="verify-onboarding.sh refuses a dashboard_editors that is not a list of user ids"
+t bash -c 'cp "$MM_WORK/CONFIG.md" "$MM_WORK/c.bak"; printf -- "- slack_channel: C0123ABCD\n- dashboard_editors: U0123ABCD, everyone\n" >> "$MM_WORK/CONFIG.md"
+out="$(bash scripts/verify-onboarding.sh --config)"; rc=$?; mv "$MM_WORK/c.bak" "$MM_WORK/CONFIG.md"
+[ $rc -ne 0 ] && echo "$out" | grep -q "FAIL config.dashboard_editors"'
+
 echo
 [ "$FAILS" -eq 0 ] && { echo "all tests passed"; exit 0; }
 echo "$FAILS test(s) failed"; exit 1

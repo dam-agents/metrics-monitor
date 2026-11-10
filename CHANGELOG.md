@@ -4,6 +4,21 @@ Each version says what changed and, under **Upgrade:**, what an instance
 already running must do to adopt it ([`docs/persistence.md`](docs/persistence.md)
 → **Definition version & upgrade**).
 
+## 0.9.0
+
+- New optional key `dashboard_editors`: Slack user ids, separated by commas,
+  who may change the dashboard from `slack_channel` (what it measures,
+  hand-set figures, layout, heading), besides `owner_slack_id`. Anyone else
+  who asks is told who can, and nothing changes; their questions are still
+  answered. Missing: anyone in the channel may, as before. Only the
+  platform's sender id counts. Set only by the owner.
+- Onboarding asks for it; `verify-onboarding.sh --config` checks it is a list
+  of user ids and that `slack_channel` is set.
+
+**Upgrade:** nothing to change. Tell the owner they can add
+`- dashboard_editors: <user ids>` to `work/CONFIG.md` to limit who changes
+the dashboard from Slack.
+
 ## 0.8.0
 
 - New optional key `owner_slack_id`: the owner's Slack user id. A Slack
