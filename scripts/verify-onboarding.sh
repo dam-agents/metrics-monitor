@@ -26,7 +26,7 @@ DEF="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="${MM_WORK:-$HOME/work}"
 export MM_WORK="$WORK"
 CONFIG="$WORK/CONFIG.md"
-KNOWN="source sources source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle logo logo_dark visibility artifact_id report_to slack_channel slack_header owner_slack_id timezone"
+KNOWN="source sources source_url source_headers source_database source_insecure max_query_hours command_timeout source_label title subtitle logo logo_dark visibility artifact_id report_to slack_channel slack_header owner_slack_id dashboard_editors timezone"
 REQUIRED="source title visibility"
 
 CHECKS=0; FAILS=0; WARNS=0
@@ -86,6 +86,11 @@ else
   if [ -z "$v" ]; then ok config.owner_slack_id "none"
   elif printf '%s' "$v" | grep -qE '^[UW][A-Z0-9]{6,}$'; then ok config.owner_slack_id "$v"
   else fail config.owner_slack_id "'$v' is not a Slack user id" "use the owner's user id from describe_channel_users, e.g. U0123ABCD: $CFG_FIX"; fi
+  v="$(cfg dashboard_editors)"
+  if [ -z "$v" ]; then ok config.dashboard_editors "anyone in slack_channel"
+  elif [ -z "$(cfg slack_channel)" ]; then fail config.dashboard_editors "set without slack_channel" "add slack_channel or remove dashboard_editors: $CFG_FIX"
+  elif printf '%s' "$v" | grep -qE '^[UW][A-Z0-9]{6,}([[:space:]]*,[[:space:]]*[UW][A-Z0-9]{6,})*$'; then ok config.dashboard_editors "$v"
+  else fail config.dashboard_editors "'$v'" "Slack user ids separated by commas, e.g. U0123ABCD, W0456EFGH: $CFG_FIX"; fi
   for k in logo logo_dark; do
     v="$(cfg "$k")"; [ -z "$v" ] && continue
     if out="$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import build; build.logo_uri(sys.argv[2]); print("ok")' "$DEF/scripts" "$v" 2>&1)"; then ok "config.$k" "$v"

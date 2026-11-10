@@ -108,10 +108,11 @@ EOF
   that channel can ask about the data and gets an answer from a live query;
   with ambient mode on (the owner turns it on in the channel binding) you
   read along and answer only when clearly asked ([`docs/slack.md`](docs/slack.md)).
-  Offer a header line for every message (`slack_header`). Tell them that
-  anyone in the channel can also ask you to change the dashboard (what it
-  measures, targets, layout, title, logo), so the people in it are the people
-  who can change it. Offer `owner_slack_id`: their own Slack user id
+  Offer a header line for every message (`slack_header`). Ask who may
+  change the dashboard from the channel (what it measures, targets, layout,
+  title, logo): anyone in it (default, leave `dashboard_editors` out), or
+  named people (look them up with `describe_channel_users`, record their user
+  ids, comma-separated, as `dashboard_editors`). Offer `owner_slack_id`: their own Slack user id
   (`describe_channel_users`), so they can change schedules, sources, sharing
   and how you work from Slack too, as in this chat. Say that only messages
   from that id get these rights. Not connected: skip
@@ -138,6 +139,7 @@ EOF
 - report_to: U0123ABCD
 - slack_channel: C0123ABCD
 - owner_slack_id: U0123ABCD
+- dashboard_editors: U0123ABCD, W0456EFGH
 - slack_header: *:bar_chart: Product metrics*
 - timezone: America/New_York
 ```
